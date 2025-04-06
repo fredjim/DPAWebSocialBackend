@@ -16,7 +16,7 @@ public class ReplyReactionController {
     @Autowired
     private ReplyReactionService replyReactionService;
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('CREATE_REPLY_REACTION')")
     @PostMapping("/{replyUuid}")
     public ResponseEntity<ReplyReactionDTO> createReplyReaction(
             @PathVariable String replyUuid,

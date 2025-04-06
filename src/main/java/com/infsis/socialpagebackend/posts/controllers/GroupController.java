@@ -17,23 +17,22 @@ public class GroupController {
     @Autowired
     private GroupService groupService;
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('VIEW_GROUP')")
     @GetMapping("/{groupUuid}")
     public GroupDTO get(@PathVariable String groupUuid) {
         return groupService.getGroup(groupUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('VIEW_ALL_GROUPS')")
     @GetMapping
     public List<GroupDTO> getAll() {
         return groupService.getAllGroups();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_GROUP')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public GroupDTO create(@Valid @RequestBody GroupDTO groupDTO) {
         return groupService.saveGroup(groupDTO);
     }
-
 }

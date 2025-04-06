@@ -31,26 +31,26 @@ public class InstitutionController {
         return institutionService.getInstitution(institutionUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('VIEW_ALL_INSTITUTIONS')")
     @GetMapping
     public List<InstitutionDTO> getAll() {
         return institutionService.getAllInstitutions();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_INSTITUTION')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public InstitutionDTO create(@Valid @RequestBody InstitutionDTO institutionDTO) {
         return institutionService.saveInstitution(institutionDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('UPDATE_INSTITUTION')")
     @PutMapping("/{institutionUuid}")
     public InstitutionDTO update(@Valid @RequestBody InstitutionDTO institutionDTO) {
         return institutionService.updateInstitution(institutionDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('DELETE_INSTITUTION')")
     @DeleteMapping("/{institutionUuid}")
     public InstitutionDTO delete(@PathVariable String institutionUuid) {
         return institutionService.deleteInstitution(institutionUuid);

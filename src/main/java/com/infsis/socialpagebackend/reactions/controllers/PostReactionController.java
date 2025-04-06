@@ -29,14 +29,14 @@ public class PostReactionController {
         return postReactionService.getAllPostReaction(postUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('CREATE_POST_REACTION')")
     @PostMapping("/posts/{postUuid}/reactions")
     @ResponseStatus(HttpStatus.CREATED)
     public PostReactionDTO create(@PathVariable String postUuid, @Valid @RequestBody PostReactionDTO postReactionDTO) {
         return postReactionService.saveReaction(postUuid, postReactionDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('DELETE_POST_REACTION')")
     @DeleteMapping("/posts/{postUuid}/reactions")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String postUuid) {

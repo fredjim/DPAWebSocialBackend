@@ -19,19 +19,19 @@ public class CommentConfigController {
     @Autowired
     private CommentConfigService commentConfigService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('VIEW_COMMENT_CONFIG')")
     @GetMapping("/{commentConfigUuid}")
     public CommentConfigDTO get(@PathVariable String commentConfigUuid) {
         return commentConfigService.getCommentConfig(commentConfigUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('VIEW_ALL_COMMENT_CONFIGS')")
     @GetMapping
     public List<CommentConfigDTO> getAll() {
         return commentConfigService.getAllCommentConfig();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_COMMENT_CONFIG')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CommentConfigDTO create(@Valid @RequestBody CommentConfigDTO commentConfigDTO) {

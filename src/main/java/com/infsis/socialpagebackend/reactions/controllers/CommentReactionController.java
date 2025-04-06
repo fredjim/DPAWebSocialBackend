@@ -29,14 +29,14 @@ public class CommentReactionController {
         return commentReactionService.getAllCommentReaction(commentUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('CREATE_COMMENT_REACTION')")
     @PostMapping("/comment/{commentUuid}/reactions")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentReactionDTO create(@PathVariable String commentUuid, @Valid @RequestBody CommentReactionDTO commentReactionDTO) {
         return commentReactionService.saveReaction(commentUuid, commentReactionDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('UPDATE_COMMENT_REACTION')")
     @PutMapping("/reactions/{reactionUuid}")
     @ResponseStatus(HttpStatus.OK)
     public CommentReactionDTO updateReaction(
@@ -44,6 +44,4 @@ public class CommentReactionController {
             @Valid @RequestBody CommentReactionDTO commentReactionDTO) {
         return commentReactionService.updateReaction(reactionUuid, commentReactionDTO);
     }
-    
-
 }
