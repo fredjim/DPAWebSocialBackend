@@ -30,6 +30,8 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-crypto'
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
+	implementation 'org.zalando:logbook-spring-boot-starter:3.3.0'
+
 
 
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
