@@ -18,7 +18,7 @@ public class FollowerController {
     @Autowired
     private FollowerService followerService;
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('FOLLOW_INSTITUTION')")
     @PostMapping("/{institutionUuid}/follow")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> followInstitution(@PathVariable String institutionUuid) {
@@ -32,7 +32,7 @@ public class FollowerController {
         }
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('UNFOLLOW_INSTITUTION')")
     @PostMapping("/{institutionUuid}/unfollow")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> unfollowInstitution(@PathVariable String institutionUuid) {
@@ -64,7 +64,8 @@ public class FollowerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    @PreAuthorize("hasRole('STUDENT')")
+
+    @PreAuthorize("hasAuthority('CHECK_FOLLOWING_STATUS')")
     @GetMapping("/{institutionUuid}/isFollowing")
     public ResponseEntity<Boolean> isFollowing(@PathVariable String institutionUuid) {
         try {

@@ -24,13 +24,13 @@ public class ReplyController {
         return replyService.getRepliesByCommentUuid(comment_uuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('CREATE_REPLY')")
     @PostMapping("/comments/{comment_uuid}/replies")
     public ReplyDTO createReply(@PathVariable String comment_uuid,@RequestBody ReplyDTO replyRequest) {
         return replyService.saveReply(comment_uuid,replyRequest);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('DELETE_REPLY')")
     @DeleteMapping("/replies/{reply_uuid}")
     public void deleteReply(@PathVariable String reply_uuid) {
         replyService.deleteReply(reply_uuid);

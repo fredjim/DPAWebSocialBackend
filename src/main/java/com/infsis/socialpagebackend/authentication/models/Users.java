@@ -62,6 +62,7 @@ public class Users {
             ,inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id_role"))
     private List<Role> roles = new ArrayList<>();
 
+    
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 

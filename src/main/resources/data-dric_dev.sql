@@ -1,6 +1,7 @@
 insert into role(id_role, name)
     values(1, 'ADMIN'),
-    (2, 'STUDENT');
+    (2, 'STUDENT'),
+    (3, 'MODERATOR');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path)
     values(100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Oscar', 'Alba Salazar', 'director-dric@umss.edu.bo', '75603618', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/729b9472-e531-4362-88cb-efd9fc656f78'),
@@ -253,4 +254,41 @@ values(1, 110, 10, NOW()),
 -- Actualizar la secuencia para la tabla followers
 SELECT setval('followers_id_seq', (SELECT MAX(id) FROM followers));
 
+-- Añadir permisos a los roles
+INSERT INTO permissions (name_permission) VALUES
+('CREATE_POST'),('DELETE_POST'),('GROUP_POST'),('UNGROUP_POST'),('UPDATE_POST'),
+('VIEW_GROUP'),('VIEW_ALL_GROUPS'),('CREATE_GROUP'),
+('VIEW_COMMENT_CONFIG'),('VIEW_ALL_COMMENT_CONFIGS'),('CREATE_COMMENT_CONFIG'),
+('CREATE_COMMENT_REACTION'),('UPDATE_COMMENT_REACTION'),
+('CREATE_EMOJI_TYPE'),
+('CREATE_POST_REACTION'),('DELETE_POST_REACTION'),
+('CREATE_REPLY_REACTION'),
+('CREATE_REPLY'),('DELETE_REPLY'),
+('CREATE_SOCIAL_NETWORK'),
+('ADD_COMMENT'),('DELETE_COMMENT'),('VIEW_MODERATED_COMMENTS'),('VIEW_REJECTED_COMMENTS'),('APPROVE_COMMENT'),('REJECT_COMMENT'),('DELETE_MODERATED_COMMENT'),('VIEW_DELETED_COMMENTS'),
+('FOLLOW_INSTITUTION'),('UNFOLLOW_INSTITUTION'),('CHECK_FOLLOWING_STATUS'),
+('VIEW_ALL_INSTITUTIONS'),('CREATE_INSTITUTION'),('UPDATE_INSTITUTION'),('DELETE_INSTITUTION'),
+('UPLOAD_DOCUMENT'),('DELETE_DOCUMENT'),
+('UPLOAD_POST_IMAGE'),('UPLOAD_INST_PROFILE_IMAGE'),('UPLOAD_INST_COVER_IMAGE'),('UPLOAD_USER_PROFILE_IMAGE'),('DELETE_POST_IMAGE'),
+('UPLOAD_VIDEO'),('DELETE_VIDEO');
 
+-- Asignar permisos al rol de STUDENT
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'STUDENT'
+AND p.name_permission IN ('CREATE_COMMENT_REACTION','UPDATE_COMMENT_REACTION',
+                         'CREATE_POST_REACTION','DELETE_POST_REACTION',
+                         'CREATE_REPLY_REACTION',
+                         'CREATE_REPLY','DELETE_REPLY',
+                         'ADD_COMMENT','DELETE_COMMENT',
+                         'FOLLOW_INSTITUTION','UNFOLLOW_INSTITUTION','CHECK_FOLLOWING_STATUS');
+
+-- Asignar permisos a ADMIN
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p WHERE r.name = 'ADMIN';
+
+-- Asignar permisos al rol de MODERATOR
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'MODERATOR'
+AND p.name_permission IN ('VIEW_MODERATED_COMMENTS','VIEW_REJECTED_COMMENTS','APPROVE_COMMENT','REJECT_COMMENT','DELETE_MODERATED_COMMENT','VIEW_DELETED_COMMENTS');

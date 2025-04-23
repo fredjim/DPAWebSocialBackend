@@ -29,7 +29,7 @@ public class EmojiTypeController {
         return emojiTypeService.getAllEmojiType();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_EMOJI_TYPE')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EmojiTypeDTO create(@Valid @RequestBody EmojiTypeDTO emojiTypeDTO) {

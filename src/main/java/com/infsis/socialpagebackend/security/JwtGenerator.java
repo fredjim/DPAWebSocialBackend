@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.security;
 
+import com.infsis.socialpagebackend.authentication.models.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -14,6 +15,8 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtGenerator {
@@ -37,24 +40,24 @@ public class JwtGenerator {
 
    // Método para crear un token con userId incluido
    public String generarToken(Authentication authentication) {
-    String username = authentication.getName();
-    Users user = userRepository.findByEmail(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+       String username = authentication.getName();
+       Users user = userRepository.findByEmail(username)
+               .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    String role = authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .findFirst()
-            .orElse("");
+       // Extraer solo los nombres de los roles
+       List<String> roleNames = user.getRoles().stream()
+               .map(Role::getName)
+               .collect(Collectors.toList());
 
-    return Jwts.builder()
-            .setSubject(username)
-            .claim("userId", user.getUuid())  // ✅ Usa el UUID correctamente
-            .claim("role", role)
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
-            .signWith(SignatureAlgorithm.HS512, ConstantsSecurity.JWT_FIRMA)
-            .compact();
-}
+       return Jwts.builder()
+               .setSubject(username)
+               .claim("userId", user.getUuid())  // ✅ Usa el UUID correctamente
+               .claim("roles", roleNames)  // ✅ Guarda solo los nombres de los roles
+               .setIssuedAt(new Date())
+               .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
+               .signWith(SignatureAlgorithm.HS512, ConstantsSecurity.JWT_FIRMA)
+               .compact();
+   }
 
 
 

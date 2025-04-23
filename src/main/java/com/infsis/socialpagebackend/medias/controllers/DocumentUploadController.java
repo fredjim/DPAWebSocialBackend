@@ -30,7 +30,7 @@ public class DocumentUploadController {
     @Autowired
     private DocumentStorageService documentStorageService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
     public DocumentFileDTO handleFileUpload(@RequestParam("file") @ValidDocumentFile MultipartFile file) throws IOException {
@@ -60,7 +60,7 @@ public class DocumentUploadController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('DELETE_DOCUMENT')")
     @DeleteMapping("/{documentUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDocument(@PathVariable String documentUuid) {

@@ -34,7 +34,7 @@ public class SocialNetworkController {
         return socialNetworkService.getAllSocialNetworksByInstitution(institutionUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_SOCIAL_NETWORK')")
     @PostMapping("/institutions/{institutionUuid}/social-networks")
     @ResponseStatus(HttpStatus.CREATED)
     public List<SocialNetworkDTO> create(@PathVariable String institutionUuid, @Valid @RequestBody List<SocialNetworkDTO> socialNetworkDTO) {

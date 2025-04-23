@@ -70,7 +70,7 @@ public class SecurityConfig {
                                 
                                 //.requestMatchers("/api/v1/websocket/**").permitAll()
                                 //.requestMatchers("/api/v1/institution/**").permitAll()
-                                //.requestMatchers("/api/v1/post/**").permitAll()
+                                //.requestMatchers("/api/v1/post/**").permitAll().
                                 //.requestMatchers("/api/v1/comment-config/**").permitAll()
                                 // .requestMatchers(HttpMethod.GET, "/institution/**").hasAnyAuthority("ADMIN", "STUDENT")
                                 //.requestMatchers("/institution/**").hasAuthority("ADMIN")

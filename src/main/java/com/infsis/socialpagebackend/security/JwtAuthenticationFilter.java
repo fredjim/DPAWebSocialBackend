@@ -2,16 +2,12 @@ package com.infsis.socialpagebackend.security;
 
 import com.infsis.socialpagebackend.authentication.repositories.InvalidTokenRepository;
 import com.infsis.socialpagebackend.authentication.services.CustomUsersDetailsService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -19,7 +15,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /*La función de esta clase será validar la información del token y si esto es exitoso,
 establecerá la autenticación de un usuario en la solicitud o en el contexto de seguridad de nuestra aplicación*/
@@ -56,15 +51,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtGenerador.obtenerUsernameDeJwt(token);
             UserDetails userDetails = customUsersDetailsService.loadUserByUsername(username);
 
-            // Extraer rol del token
-            Claims claims = Jwts.parser().setSigningKey(ConstantsSecurity.JWT_FIRMA).parseClaimsJws(token).getBody();
-            String role = claims.get("role").toString();
-            GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role); // Asegúrate de que el rol tenga el prefijo "ROLE_"
-
+            // Usar los permisos ya cargados en userDetails
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, Collections.singletonList(authority));
+                    userDetails, null, userDetails.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            // Imprimir permisos del usuario
+            userDetails.getAuthorities().forEach(auth -> System.out.println("Permiso: " + auth.getAuthority()));
         }
         chain.doFilter(request, response);
     }

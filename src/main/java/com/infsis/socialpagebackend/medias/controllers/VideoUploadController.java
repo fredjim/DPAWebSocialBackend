@@ -25,7 +25,7 @@ public class VideoUploadController {
     @Autowired
     private com.infsis.socialpagebackend.medias.services.VideoStorageService videoStorageService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('UPLOAD_VIDEO')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
     public List<VideoFileDTO> handleVideoUpload(@RequestParam("videos") @ValidVideoFile List<MultipartFile> videos) throws IOException {
@@ -37,7 +37,7 @@ public class VideoUploadController {
         return videoStorageService.getVideo(filename, VIDEOS_DIRECTORY);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('DELETE_VIDEO')")
     @DeleteMapping("/{uuid}")
     public ResponseEntity<String> deleteVideo(@PathVariable String uuid) {
         videoStorageService.deleteVideo(uuid, VIDEOS_DIRECTORY);

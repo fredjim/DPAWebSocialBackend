@@ -17,7 +17,7 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('ADD_COMMENT')")
     @PostMapping("/post/{postUuid}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDTO addComment(@PathVariable String postUuid, @RequestBody CommentDTO commentDTO) {
@@ -29,7 +29,7 @@ public class CommentController {
         return commentService.getCommentsByPost(postUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('DELETE_COMMENT')")
     @DeleteMapping("/posts/{postUuid}/comments/{commentUuid}")
     public ResponseEntity<String> deleteComment(@PathVariable String postUuid, @PathVariable String commentUuid) {
         try {
@@ -40,49 +40,37 @@ public class CommentController {
         }
     }
 
-    /*
-    Retrieve all comments that need a moderator to be approved
-     */
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('VIEW_MODERATED_COMMENTS')")
     @GetMapping("/comments/moderated")
     public List<CommentDTO> getAllModeratedComments() {
         return commentService.getAllPendingModeratedComments();
     }
 
-    /*
-    Retrieve all the rejected comments by a moderated
-    */
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('VIEW_REJECTED_COMMENTS')")
     @GetMapping("/comments/rejected")
     public List<CommentDTO> getAllRejectedComments() {
         return commentService.getAllRejectedModeratedComments();
     }
 
-    /*
-    It changes comment state PENDING to APPROVED
-    */
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('APPROVE_COMMENT')")
     @PutMapping("/comments/approve")
     public CommentDTO approveModeratedComments(@RequestBody CommentDTO commentDTO) {
         return commentService.approvePendingModeratedComment(commentDTO);
     }
 
-    /*
-    It changes comment state PENDING to REJECTED
-    */
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('REJECT_COMMENT')")
     @PutMapping("/comments/reject")
     public CommentDTO rejectModeratedComments(@RequestBody CommentDTO commentDTO) {
         return commentService.rejectPendingModeratedComment(commentDTO);
     }
 
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('DELETE_MODERATED_COMMENT')")
     @PutMapping("/comments/delete")
     public CommentDTO deleteModeratedComments(@RequestBody CommentDTO commentDTO) {
         return commentService.removeModeratedComment(commentDTO);
     }
 
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('VIEW_DELETED_COMMENTS')")
     @GetMapping("/comments/deleted")
     public List<CommentDTO> getAllDeletedComments() {
         return commentService.getAllDeletedModeratedComments();

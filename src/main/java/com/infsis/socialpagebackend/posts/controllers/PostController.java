@@ -27,28 +27,28 @@ public class PostController {
         return postService.getAllPost();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CREATE_POST')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PostDTO create(@Valid @RequestBody PostDTO postDTO) {
         return postService.savePost(postDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('DELETE_POST')")
     @DeleteMapping("/{postUuid}")
     @ResponseStatus(HttpStatus.OK)
     public PostDTO delete(@PathVariable String postUuid) {
         return postService.deletePost(postUuid);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP_POST')")
     @PostMapping("/{postUuid}/group")
     @ResponseStatus(HttpStatus.OK)
     public PostGroupDTO group(@PathVariable String postUuid, @Valid @RequestBody PostGroupDTO postGroupDTO) {
         return postService.addToGroup(postUuid, postGroupDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('UNGROUP_POST')")
     @PutMapping("/{postUuid}/group")
     @ResponseStatus(HttpStatus.OK)
     public PostGroupDTO ungroup(@PathVariable String postUuid, @Valid @RequestBody PostGroupDTO postGroupDTO) {
@@ -63,7 +63,7 @@ public class PostController {
     @Autowired
     private PostService postService; // Inyección del servicio que contiene la lógica de negocio
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('UPDATE_POST')")
     @PutMapping("/{postUuid}") // Este endpoint maneja solicitudes PUT para actualizar una publicación específica
     public ResponseEntity<PostDTO> updatePost(
         @PathVariable String postUuid, // Se obtiene el UUID de la publicación desde la URL
