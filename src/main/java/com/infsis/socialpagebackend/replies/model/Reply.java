@@ -1,6 +1,7 @@
 package com.infsis.socialpagebackend.replies.model;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.reactions.models.ReplyReaction;
@@ -9,7 +10,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -54,4 +55,20 @@ public class Reply {
     public void initializeUuid() {
         this.uuid = UUID.randomUUID().toString();
     }
+
+    // 🚨 **Asegurar que las respuestas anidadas se guarden bien**
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_reply_id")
+    @JsonBackReference
+    private Reply parentReply;
+
+    @OneToMany(mappedBy = "parentReply", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Reply> replies = new ArrayList<>();
+
+    @Transient  // No se almacena en la base de datos
+    public String getParentReplyUuid() {
+        return parentReply != null ? parentReply.getUuid() : null;
+    }
+
 }
