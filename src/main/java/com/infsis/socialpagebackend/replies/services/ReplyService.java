@@ -47,35 +47,67 @@ public class ReplyService {
 
     public List<ReplyDTO> getRepliesByCommentUuid(String commentUuid) {
         List<Reply> replies = replyRepository.findByCommentUuid(commentUuid);
-        return replies
-                .stream()
+        
+        // 📌 Construimos la jerarquía de respuestas
+        return buildReplyTree(replies, null);
+    }
+    
+   
+    private List<ReplyDTO> buildReplyTree(List<Reply> replies, String parentReplyUuid) {
+        return replies.stream()
+                .filter(reply -> {
+                    if (parentReplyUuid == null) {
+                        return reply.getParentReply() == null; // Respuestas de primer nivel
+                    } else {
+                        return reply.getParentReply() != null && reply.getParentReply().getUuid().equals(parentReplyUuid);
+                    }
+                })
                 .map(reply -> {
-                    ReplyDTO replyDTO = convertToDTO(reply);
-                    ReactionCounterDTO reactionCounterDTO = getReplyReactionCounterDTO(reply);
-                    replyDTO.setReactions(reactionCounterDTO);
-                    return replyDTO;
+                    ReplyDTO dto = convertToDTO(reply);
+                    dto.setReactions(getReplyReactionCounterDTO(reply));
+    
+                    // 📌 Obtener respuestas hijas de forma recursiva
+                    List<ReplyDTO> childReplies = buildReplyTree(replies, reply.getUuid());
+                    dto.setReplies(childReplies != null ? childReplies : new ArrayList<>()); // ✅ Evita null
+    
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
+    
+ 
+    
+    
 
     public ReplyDTO saveReply(String comment_uuid, ReplyDTO replyRequest) {
         Comment comment = commentRepository.findByUuid(comment_uuid);
         if (comment == null) {
             throw new IllegalArgumentException("Comment not found");
         }
-
+    
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado con email: ", email));
-
+    
         Reply reply = new Reply();
         reply.setComment(comment);
         reply.setContent(replyRequest.getContent());
         reply.setUser(user);
+    
+     // Si hay `parentReplyUuid`, se asocia a una respuesta existente
+if (replyRequest.getParentReplyUuid() != null) {
+    Reply parentReply = replyRepository.findByUuid(replyRequest.getParentReplyUuid());
+    if (parentReply == null) {
+        throw new NotFoundException("Parent reply not found with uuid: " , replyRequest.getParentReplyUuid());
+    }
+    reply.setParentReply(parentReply);  // 🔥 Aquí asignamos correctamente el padre
+}
+
         reply = replyRepository.save(reply);
         return convertToDTO(reply);
     }
+    
 
     public void deleteReply(String uuid) {
         Reply reply = replyRepository.findByUuid(uuid);
@@ -88,12 +120,21 @@ public class ReplyService {
     private ReplyDTO convertToDTO(Reply reply) {
         ReplyDTO dto = new ReplyDTO();
         dto.setUuid(reply.getUuid());
-        dto.setContent(reply.getContent());
         dto.setCreatedDate(reply.getCreatedDate());
+        dto.setContent(reply.getContent());
         dto.setName(reply.getUser().getName());
         dto.setLastName(reply.getUser().getLastName());
+        dto.setUser_photo(reply.getUser().getPhoto_profile_path());
+        dto.setParentReplyUuid(reply.getParentReply() != null ? reply.getParentReply().getUuid() : null);
+    
+       
+        dto.setReplies(reply.getReplies() != null ? 
+            reply.getReplies().stream().map(this::convertToDTO).collect(Collectors.toList()) : new ArrayList<>());
+        
         return dto;
     }
+    
+    
     private ReactionCounterDTO getReplyReactionCounterDTO(Reply reply) {
 
         ReactionCounterDTO reactionCounterDTO = new ReactionCounterDTO();
