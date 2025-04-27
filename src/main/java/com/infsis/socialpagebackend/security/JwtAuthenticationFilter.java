@@ -44,10 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = obtenerTokenDeSolicitud(request);
         if (StringUtils.hasText(token) && jwtGenerador.validarToken(token)) {
-            if (tokenRepository.findByToken(token).isPresent()) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
-                return;
-            }
+
             String username = jwtGenerador.obtenerUsernameDeJwt(token);
             UserDetails userDetails = customUsersDetailsService.loadUserByUsername(username);
 
