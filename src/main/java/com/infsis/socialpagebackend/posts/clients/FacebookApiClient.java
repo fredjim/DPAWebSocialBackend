@@ -51,21 +51,21 @@ public class FacebookApiClient {
         params.add("message", postDTO.getContent().getText());
 
         int i = 0;
-        for (MediaDTO mediaFbID : postDTO.getContent().getMedia()) {
-            params.add("attached_media[" + i +  "]", "{'media_fbid':'" + mediaFbID.getFb_media_id() + "'}");
+        for (MediaDTO media : postDTO.getContent().getMedia()) {
+            params.add("attached_media[" + i + "]", "{'media_fbid':'" + media.getFb_media_id() + "'}");
             i++;
         }
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(graphApiUrl + "/" + graphApiPageId + "/feed", request, String.class);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                graphApiUrl + "/" + graphApiPageId + "/feed", request , String.class);
+        logger.info("Successful Post in Facebook, Response Status: {} | Response Boddy : {}", response.getStatusCode(), response.getBody());
 
-        logger.info("Successful Post in Facebook, Response Status: {} | Response Boddy : {}", response.getStatusCode(), response.getBody() );
 
     }
 
-    private List<String> postImages(List<MediaDTO> photos) {
+    //Publish link images in Facebook
+    private List<String> postLinkImages(List<MediaDTO> photos) {
 
         List<String> postedImages = new ArrayList<>();
 

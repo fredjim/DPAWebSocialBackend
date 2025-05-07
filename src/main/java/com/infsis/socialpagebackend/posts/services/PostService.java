@@ -152,8 +152,10 @@ public class PostService {
 
         }
 
-        // Post in Facebook
-        facebookApiClient.postPublication(postDTO);
+        // Publish in Facebook
+        if(!postDTO.getIs_fb_posted()) {
+            facebookApiClient.postPublication(postDTO);
+        }
 
         return resDTO;
     }
