@@ -28,6 +28,7 @@ import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/api")
@@ -64,27 +65,28 @@ public class AuthenticationController {
 
     //Método para poder registrar usuarios con role "user"
     @PostMapping("/auth/register")
-    public ResponseEntity<String> registrar(@Valid @RequestBody UserRegistryDTO userRegistryDTO) {
+    public ResponseEntity<Map<String, String>> registrar(@Valid @RequestBody UserRegistryDTO userRegistryDTO) {
 
         if (!userRegistryDTO.getPassword().equals(userRegistryDTO.getRepeat_password())) {
-            return new ResponseEntity<>(PASSWORD_INVALID_MATCHING_MESSAGE, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.singletonMap("message", PASSWORD_INVALID_MATCHING_MESSAGE), HttpStatus.BAD_REQUEST);
         }
 
         if (usuariosRepository.existsByEmail(userRegistryDTO.getEmail())) {
-            return new ResponseEntity<>(REGISTERED_USER_EMAIL_MESSAGE, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.singletonMap("message", REGISTERED_USER_EMAIL_MESSAGE), HttpStatus.BAD_REQUEST);
         }
-        Users usuarios = new Users();
 
+        Users usuarios = new Users();
         usuarios.setName(userRegistryDTO.getName());
         usuarios.setLastName(userRegistryDTO.getLastName());
         usuarios.setEmail(userRegistryDTO.getEmail());
         usuarios.setPhone(userRegistryDTO.getPhone());
-
         usuarios.setPassword(passwordEncoder.encode(userRegistryDTO.getPassword()));
+
         Role roles = rolesRepository.findByName(ROLE_STUDENT).get();
         usuarios.setRoles(Collections.singletonList(roles));
         usuariosRepository.save(usuarios);
-        return new ResponseEntity<>(SUCCESSFUL_USER_REGISTRATION_MESSAGE, HttpStatus.OK);
+
+        return new ResponseEntity<>(Collections.singletonMap("message", SUCCESSFUL_USER_REGISTRATION_MESSAGE), HttpStatus.OK);
     }
 
     //Método para poder guardar usuarios de tipo ADMIN
