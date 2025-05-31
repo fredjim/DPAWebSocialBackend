@@ -68,33 +68,26 @@ public class AuthenticationController {
     //Método para poder registrar usuarios con role "user"
     @PostMapping("/auth/register")
     public ResponseEntity<Map<String, Object>> registrar(@Valid @RequestBody UserRegistryDTO userRegistryDTO) {
-
-        Map<String, Object> response = new HashMap<>();
         if (!userRegistryDTO.getPassword().equals(userRegistryDTO.getRepeat_password())) {
-            response.put("status", "failed");
-            response.put("message", PASSWORD_INVALID_MATCHING_MESSAGE);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.singletonMap("message", PASSWORD_INVALID_MATCHING_MESSAGE), HttpStatus.BAD_REQUEST);
         }
 
         if (usuariosRepository.existsByEmail(userRegistryDTO.getEmail())) {
-            response.put("message", REGISTERED_USER_EMAIL_MESSAGE);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.singletonMap("message", REGISTERED_USER_EMAIL_MESSAGE), HttpStatus.BAD_REQUEST);
         }
-        Users newUser = new Users();
 
-        newUser.setName(userRegistryDTO.getName());
-        newUser.setLastName(userRegistryDTO.getLastName());
-        newUser.setEmail(userRegistryDTO.getEmail());
-        newUser.setPhone(userRegistryDTO.getPhone());
+        Users usuarios = new Users();
+        usuarios.setName(userRegistryDTO.getName());
+        usuarios.setLastName(userRegistryDTO.getLastName());
+        usuarios.setEmail(userRegistryDTO.getEmail());
+        usuarios.setPhone(userRegistryDTO.getPhone());
+        usuarios.setPassword(passwordEncoder.encode(userRegistryDTO.getPassword()));
 
-        newUser.setPassword(passwordEncoder.encode(userRegistryDTO.getPassword()));
         Role roles = rolesRepository.findByName(ROLE_STUDENT).get();
-        newUser.setRoles(Collections.singletonList(roles));
-        usuariosRepository.save(newUser);
-        response.put("status", "success");
-        response.put("message", SUCCESSFUL_USER_REGISTRATION_MESSAGE);
-        response.put("data", newUser);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        usuarios.setRoles(Collections.singletonList(roles));
+        usuariosRepository.save(usuarios);
+
+        return new ResponseEntity<>(Collections.singletonMap("message", SUCCESSFUL_USER_REGISTRATION_MESSAGE), HttpStatus.OK);
     }
 
     //Método para poder guardar usuarios de tipo ADMIN
