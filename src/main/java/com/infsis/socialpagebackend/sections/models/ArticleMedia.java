@@ -40,10 +40,10 @@ public class ArticleMedia {
     @Column(nullable = false, length = 150)
     private String file_name;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 150)
     private String file_path;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 30)
     private String file_type;
 
     @Column(nullable = false, length = 10)

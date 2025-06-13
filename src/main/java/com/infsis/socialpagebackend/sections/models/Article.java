@@ -45,7 +45,7 @@ public class Article {
     @Column(length = 1000)
     private String title;
 
-    @Column(length = 1000)
+    @Column(length = 3000)
     private String text;
 
     @Column()

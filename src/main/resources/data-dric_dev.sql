@@ -185,7 +185,9 @@ insert into image_file (id, uuid, name, url_resource, status, type)
      (124, 'aa74ec25-6e70-4776-899c-7465c61de5bd', 'vid01', 'http://localhost:9090/api/v1/videos/posts/aa74ec25-6e70-4776-899c-7465c61de5bd', 'SAVED_SUCCESSFULLY','video/mp4'),
      (125, '6cce68f8-76ef-4639-9828-9e5e6e819fc4', 'img26', 'http://localhost:9090/api/v1/images/posts/6cce68f8-76ef-4639-9828-9e5e6e819fc4', 'SAVED_SUCCESSFULLY','image/jpeg'),
      (126, 'c401fbaa-7f94-41ad-a7ef-f677d2d30f3d', 'img27', 'http://localhost:9090/api/v1/images/posts/c401fbaa-7f94-41ad-a7ef-f677d2d30f3d', 'SAVED_SUCCESSFULLY','image/jpeg'),
-     (127, '526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'img28', 'http://localhost:9090/api/v1/videos/posts/526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'SAVED_SUCCESSFULLY','video/mp4');
+     (127, '526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'img28', 'http://localhost:9090/api/v1/videos/posts/526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'SAVED_SUCCESSFULLY','video/mp4'),
+     (128, 'e7629149-79db-4bc6-85c9-12fa52d35c34', 'img29', 'http://localhost:9090/api/v1/images/posts/e7629149-79db-4bc6-85c9-12fa52d35c34', 'SAVED_SUCCESSFULLY','image/jpeg'),
+     (129, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'img30', 'http://localhost:9090/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'SAVED_SUCCESSFULLY','image/jpeg');
 
 insert into video_file (id, uuid, name, url_resource, status, type)
     values (100, '200504be-c220-4932-9810-126fe8590a9c', 'video01', 'http://localhost:9090/api/v1/videos/posts/200504be-c220-4932-9810-126fe8590a9c', 'SAVED_SUCCESSFULLY', 'video/mp4'),
