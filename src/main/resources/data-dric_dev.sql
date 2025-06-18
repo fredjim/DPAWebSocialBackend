@@ -1,7 +1,10 @@
 insert into role(id_role, name)
     values(1, 'ADMIN'),
     (2, 'STUDENT'),
-    (3, 'MODERATOR');
+    (3, 'MODERATOR'),
+    (4, 'ADMIN_CONVENIOS'),
+    (5, 'ADMIN_PROYECTOS'),
+    (6, 'ADMIN_BECAS');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path)
     values(100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Oscar', 'Alba Salazar', 'director-dric@umss.edu.bo', '75603618', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/729b9472-e531-4362-88cb-efd9fc656f78'),
@@ -21,9 +24,9 @@ insert into users (id_user, uuid, name, last_name, email, phone, password, photo
 insert into user_roles (user_id, role_id)
     values(100, 1),
     (101, 1),
-    (110, 2),
-    (111, 2),
-    (112, 2),
+    (110, 4),
+    (111, 5),
+    (112, 6),
     (113, 2),
     (114, 2),
     (115, 2),
@@ -84,15 +87,15 @@ values(100, '17ucf8a1-09e0-4435-a850-0613d778897b', '1e5294f8-9a6c-4d9e-aea7-da7
     (110, '3v7c2gs8-09e0-4435-a850-0613d778897b', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', 'img11', 1, 'image', 'http://localhost:9090/api/v1/images/posts/6cce68f8-76ef-4639-9828-9e5e6e819fc4'),
     (111, 'l2n5c0f7-09e0-4435-a850-0613d778897b', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', 'img12', 2, 'image', 'http://localhost:9090/api/v1/images/posts/c401fbaa-7f94-41ad-a7ef-f677d2d30f3d');
 
-insert into post (id, uuid, institution_id, user_id, comment_config_id, content_id, post_date)
-    values(100, '5f9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49','875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-02T07:53:22'),
-        (101, '7h3ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-02T19:31:22'),
-        (102, '2k9db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '587d7d7f-5g3n-4b77-cf98-77a9h46759d0', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-03T08:00:22'),
-        (103, '8s2ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-04T08:00:22'),
-        (104, '3g9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-04T10:25:22'),
-        (105, '5n1ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T08:00:12'),
-        (106, '9v4mb4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '492d7d7f-9f4s-8g45-hy34-77a9h46759d0', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T19:30:26'),
-        (107, '1ib6k3c5-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:51:18');
+insert into post (id, uuid, institution_id, user_id, comment_config_id, content_id, post_date, post_type)
+    values(100, '5f9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49','875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-02T07:53:22', 'GENERAL'),
+        (101, '7h3ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-02T19:31:22', 'GENERAL'),
+        (102, '2k9db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '587d7d7f-5g3n-4b77-cf98-77a9h46759d0', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-03T08:00:22', 'GENERAL'),
+        (103, '8s2ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-04T08:00:22', 'GENERAL'),
+        (104, '3g9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-04T10:25:22', 'GENERAL'),
+        (105, '5n1ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T08:00:12', 'PROYECTOS'),
+        (106, '9v4mb4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '492d7d7f-9f4s-8g45-hy34-77a9h46759d0', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T19:30:26', 'BECAS'),
+        (107, '1ib6k3c5-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:51:18', 'CONVENIOS');
 
 insert into emoji_type (id, uuid, emoji_name, emoji_code)
     values(100, '3f696a78-c73f-475c-80a6-f5a858648af1', 'thumbs-up', U&'\+01F44D'),
@@ -287,7 +290,23 @@ AND p.name_permission IN ('CREATE_COMMENT_REACTION','DELETE_COMMENT_REACTION',
 
 -- Asignar permisos a ADMIN
 INSERT INTO rol_permissions (role_id, permission_id)
-SELECT r.id_role, p.id_permission FROM role r, permissions p WHERE r.name = 'ADMIN';
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'ADMIN';
+
+-- Asignar permisos a ADMIN
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'ADMIN_CONVENIOS';
+
+-- Asignar permisos a ADMIN
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'ADMIN_PROYECTOS';
+
+-- Asignar permisos a ADMIN
+INSERT INTO rol_permissions (role_id, permission_id)
+SELECT r.id_role, p.id_permission FROM role r, permissions p
+WHERE r.name = 'ADMIN_BECAS';
 
 -- Asignar permisos al rol de MODERATOR
 INSERT INTO rol_permissions (role_id, permission_id)

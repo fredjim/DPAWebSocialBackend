@@ -117,6 +117,15 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostDTO> getPostsByType(String postType) {
+        return postRepository
+                .findAll()
+                .stream()
+                .filter(post -> post.getPost_type().equals(postType))
+                .map(post -> postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid())))
+                .collect(Collectors.toList());
+    }
+
     public PostDTO savePost(PostDTO postDTO) {
 
         Content content = contentRepository.save(new Content());

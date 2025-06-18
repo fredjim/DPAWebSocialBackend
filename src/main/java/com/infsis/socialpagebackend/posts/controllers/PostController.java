@@ -27,6 +27,12 @@ public class PostController {
         return postService.getAllPost();
     }
 
+    @GetMapping("/type/{postType}")
+    public ResponseEntity<List<PostDTO>> getPostsByType(@PathVariable String postType) {
+        List<PostDTO> posts = postService.getPostsByType(postType);
+        return ResponseEntity.ok(posts);
+    }
+
     @PreAuthorize("hasAuthority('CREATE_POST')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
