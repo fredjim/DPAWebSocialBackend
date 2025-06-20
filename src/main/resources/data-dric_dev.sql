@@ -7,11 +7,11 @@ insert into role(id_role, name)
     (6, 'ADMIN_BECAS');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path)
-    values(100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Oscar', 'Alba Salazar', 'director-dric@umss.edu.bo', '75603618', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/729b9472-e531-4362-88cb-efd9fc656f78'),
+    values(100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Alicia', 'Selaya Flores', 'admin-dric@umss.edu.bo', '75603618', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
     (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'Valentin', 'Laime Zapata', 'valentin.laime@umss.edu.bo', '70755958', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, 'http://localhost:9090/api/v1/images/users/e867fa32-75b7-4c3c-8943-4a2808c10ac0'),
-    (110, '9bae1fe0-2c56-4091-883d-15458e051500', 'Emely', 'Fernandez Soliz', '202004181@est.umss.edu', '69577142', '$2a$10$ElXlBz1WzNDhanqtCmszb.bub/iKGcNQgcbr31MQe9wjsiim7Q5zG', null, 'http://localhost:9090/api/v1/images/users/733b01ba-198e-42db-b9ca-d7ace9a7abad'),
-    (111, '844b324d-2f5e-41c9-b726-0149eeb01157', 'Javier', 'Lopez Canedo', '202394182@est.umss.edu', '71852821', '$2a$10$Gm0O/HK8qXeqa/XPvrm4/uAQj2.G3XdKOHg8XTxG4Gif1UYDPcbEa', null, 'http://localhost:9090/api/v1/images/users/06b8fbe5-9d91-422b-bd20-6d89d23e5608'),
-    (112, '2e121a51-24b5-4aad-92c2-150997ec4266', 'Leonardo', 'Beltran Ramirez', '202120735@est.umss.edu', '75891148', '$2a$10$vs8E1jwz6Z3BBitXHP.Y/uVQ0pNkqHhXf0oQCFH7Nf/rjccHL2lCO', null, 'http://localhost:9090/api/v1/images/users/b5de2b13-4720-41e7-87d2-d31abd590fac'),
+    (110, '9bae1fe0-2c56-4091-883d-15458e051500', 'Emely', 'Fernandez Soliz', 'emely.fernandez@umss.edu', '69577142', '$2a$10$ElXlBz1WzNDhanqtCmszb.bub/iKGcNQgcbr31MQe9wjsiim7Q5zG', null, 'http://localhost:9090/api/v1/images/users/733b01ba-198e-42db-b9ca-d7ace9a7abad'),
+    (111, '844b324d-2f5e-41c9-b726-0149eeb01157', 'Javier', 'Lopez Canedo', 'javier.lopez@umss.edu', '71852821', '$2a$10$Gm0O/HK8qXeqa/XPvrm4/uAQj2.G3XdKOHg8XTxG4Gif1UYDPcbEa', null, 'http://localhost:9090/api/v1/images/users/06b8fbe5-9d91-422b-bd20-6d89d23e5608'),
+    (112, '2e121a51-24b5-4aad-92c2-150997ec4266', 'Leonardo', 'Beltran Ramirez', 'leonardo.beltran@umss.edu', '75891148', '$2a$10$vs8E1jwz6Z3BBitXHP.Y/uVQ0pNkqHhXf0oQCFH7Nf/rjccHL2lCO', null, 'http://localhost:9090/api/v1/images/users/b5de2b13-4720-41e7-87d2-d31abd590fac'),
     (113, 'c332c4ff-49e8-4e0e-a7f4-d59907d8cda3', 'Valeria', 'Gonzales Vargas', 'svaleria.gonzales.vargas@gmail.com', '78823541', '$2a$10$tt2avNxEODCYrI9qHFqr5elrI5O87dVRNQZGUgAHVMUi8XtWnwXE.', null, 'http://localhost:9090/api/v1/images/users/5e9f9c0d-4c31-4335-a11e-b9c7f6f8a2b1'),
     (114, '9f32985a-f108-4b19-9bda-cab7c501ae68', 'Jose', U&'Monta\00F1o Laura', '202001823@est.umss.edu', '72566218', '$2a$10$6HOIAlIZ2.KXIi8qL1AHxOIs3zHYydtV3QnZ.wJ9wrr18qhJEi576', null, 'http://localhost:9090/api/v1/images/users/1bed8052-ba51-41c2-88b5-e39e78dbf420'),
     (115, 'ab6e1a7f-4494-4251-8177-dc5c4fe18740', 'Marcos', 'Illanes Martinez', '201800513@est.umss.edu', '74269527', '$2a$10$96.BNIsnUH7u.eVTeWi7Ju/exv59yfngw.TdVVOv5ladZ87KBZLaK', null, 'http://localhost:9090/api/v1/images/users/28e3d103-76e8-4b0d-b04c-cf2e8821cf6e'),
@@ -190,7 +190,10 @@ insert into image_file (id, uuid, name, url_resource, status, type)
      (126, 'c401fbaa-7f94-41ad-a7ef-f677d2d30f3d', 'img27', 'http://localhost:9090/api/v1/images/posts/c401fbaa-7f94-41ad-a7ef-f677d2d30f3d', 'SAVED_SUCCESSFULLY','image/jpeg'),
      (127, '526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'img28', 'http://localhost:9090/api/v1/videos/posts/526e6a41-f1cd-42e1-ab6c-e32ccbfdddb6', 'SAVED_SUCCESSFULLY','video/mp4'),
      (128, 'e7629149-79db-4bc6-85c9-12fa52d35c34', 'img29', 'http://localhost:9090/api/v1/images/posts/e7629149-79db-4bc6-85c9-12fa52d35c34', 'SAVED_SUCCESSFULLY','image/jpeg'),
-     (129, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'img30', 'http://localhost:9090/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'SAVED_SUCCESSFULLY','image/jpeg');
+     (129, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'img30', 'http://localhost:9090/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5', 'SAVED_SUCCESSFULLY','image/jpeg'),
+     (130, 'af87625e-3075-41a5-901a-cf950330b237', 'img31', 'http://localhost:9090/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237', 'SAVED_SUCCESSFULLY','image/png');
+
+
 
 insert into video_file (id, uuid, name, url_resource, status, type)
     values (100, '200504be-c220-4932-9810-126fe8590a9c', 'video01', 'http://localhost:9090/api/v1/videos/posts/200504be-c220-4932-9810-126fe8590a9c', 'SAVED_SUCCESSFULLY', 'video/mp4'),

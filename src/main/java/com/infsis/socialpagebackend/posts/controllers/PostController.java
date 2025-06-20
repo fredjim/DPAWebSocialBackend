@@ -27,9 +27,9 @@ public class PostController {
         return postService.getAllPost();
     }
 
-    @GetMapping("/type/{postType}")
-    public ResponseEntity<List<PostDTO>> getPostsByType(@PathVariable String postType) {
-        List<PostDTO> posts = postService.getPostsByType(postType);
+    @GetMapping(params = "type")
+    public ResponseEntity<List<PostDTO>> getPostsByType(@RequestParam String type) {
+        List<PostDTO> posts = postService.getPostsByType(type);
         return ResponseEntity.ok(posts);
     }
 
