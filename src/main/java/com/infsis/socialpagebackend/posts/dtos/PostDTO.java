@@ -30,7 +30,7 @@ public class PostDTO {
     private Date date;
 
     @NotBlank
-    @Size(min = 10, max = 40)
+    @Size(min = 3, max = 40)
     private String post_type;
 
     @NotNull
