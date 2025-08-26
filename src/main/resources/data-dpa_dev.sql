@@ -8,7 +8,7 @@ insert into role(id_role, name) values
     (7, 'ADMIN_CUDIE');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path) values
-    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Alicia', 'Selaya Flores', 'admin-dric@umss.edu.bo', '75603618', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
+    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Micael', 'Guzman', 'micael.guzman@dpa.umss.edu.bo', '71795251', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://localhost:9090/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
     (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'Valentin', 'Laime Zapata', 'valentin.laime@umss.edu.bo', '70755958', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, 'http://localhost:9090/api/v1/images/users/e867fa32-75b7-4c3c-8943-4a2808c10ac0'),
     (110, '9bae1fe0-2c56-4091-883d-15458e051500', 'Emely', 'Fernandez Soliz', 'admin-convenios@umss.edu', '69577142', '$2a$10$ElXlBz1WzNDhanqtCmszb.bub/iKGcNQgcbr31MQe9wjsiim7Q5zG', null, 'http://localhost:9090/api/v1/images/users/733b01ba-198e-42db-b9ca-d7ace9a7abad'),
     (111, '844b324d-2f5e-41c9-b726-0149eeb01157', 'Javier', 'Lopez Canedo', 'admin-proyectos@umss.edu', '71852821', '$2a$10$Gm0O/HK8qXeqa/XPvrm4/uAQj2.G3XdKOHg8XTxG4Gif1UYDPcbEa', null, 'http://localhost:9090/api/v1/images/users/06b8fbe5-9d91-422b-bd20-6d89d23e5608'),
@@ -126,17 +126,13 @@ Lugar: Señalados por facultades en la circular DPA No. 08/2025');
 
 insert into media (id, uuid, content_id, file_name, number, file_type, file_path) values
 	(100, '17ucf8a1-09e0-4435-a850-0613d778897b', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img01', 1, 'image', 'http://localhost:9090/api/v1/images/posts/a968e0d8-2209-4df0-aec1-4a1618d73aa4'),
-    (101, '81k7f8a1-09e0-4435-a850-0613d778897b', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'vid01', 1, 'video', 'http://localhost:9090/api/v1/videos/posts/cbca5013-5556-4f35-b945-6a7de7083659'),
-    (102, '24l5f8a1-09e0-4435-a850-0613d778897b', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img03', 1, 'image', 'http://localhost:9090/api/v1/images/posts/34c1bc99-453c-443c-8f2a-ca1f15650a71'),
-    (103, '79a3f8a1-09e0-4435-a850-0613d778897b', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img04', 1, 'image', 'http://localhost:9090/api/v1/images/posts/73228194-1485-496f-827d-7c38b62c5c7e'),
-    (104, '38j1f8a1-09e0-4435-a850-0613d778897b', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img05', 1, 'image', 'http://localhost:9090/api/v1/images/posts/fbbca054-34cd-4ebe-9bfe-3b22be8bb836'),
-    (105, '2k9zf8a1-09e0-4435-a850-0613d778897b', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img06', 2, 'image', 'http://localhost:9090/api/v1/images/posts/745a495d-4563-41a1-8733-f089b3b7b21d'),
-    (106, '6m1vf8a1-09e0-4435-a850-0613d778897b', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img07', 3, 'image', 'http://localhost:9090/api/v1/images/posts/3b900a66-2021-49e1-9152-c6d432d1aa52'),
-    (107, '17b9m4z3-09e0-4435-a850-0613d778897b', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img08', 4, 'image', 'http://localhost:9090/api/v1/images/posts/ddc5a29a-c607-44db-95f2-c66f1da21fde'),
-    (108, '5jc8x7v4-09e0-4435-a850-0613d778897b', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img09', 1, 'image', 'http://localhost:9090/api/v1/images/posts/27897c0a-2503-4536-83ed-a65a596646fb'),
-    (109, '8xm4v1n3-09e0-4435-a850-0613d778897b', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', 'vid02', 1, 'video', 'http://localhost:9090/api/v1/videos/posts/aa74ec25-6e70-4776-899c-7465c61de5bd'),
-    (110, '3v7c2gs8-09e0-4435-a850-0613d778897b', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', 'img11', 1, 'image', 'http://localhost:9090/api/v1/images/posts/6cce68f8-76ef-4639-9828-9e5e6e819fc4'),
-    (111, 'l2n5c0f7-09e0-4435-a850-0613d778897b', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', 'img12', 2, 'image', 'http://localhost:9090/api/v1/images/posts/c401fbaa-7f94-41ad-a7ef-f677d2d30f3d');
+    (101, '24l5f8a1-09e0-4435-a850-0613d778897b', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img03', 1, 'image', 'http://localhost:9090/api/v1/images/posts/34c1bc99-453c-443c-8f2a-ca1f15650a71'),
+    (102, '79a3f8a1-09e0-4435-a850-0613d778897b', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img04', 1, 'image', 'http://localhost:9090/api/v1/images/posts/73228194-1485-496f-827d-7c38b62c5c7e'),
+    (103, '38j1f8a1-09e0-4435-a850-0613d778897b', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img05', 1, 'image', 'http://localhost:9090/api/v1/images/posts/fbbca054-34cd-4ebe-9bfe-3b22be8bb836'),
+    (104, '2k9zf8a1-09e0-4435-a850-0613d778897b', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img06', 1, 'image', 'http://localhost:9090/api/v1/images/posts/745a495d-4563-41a1-8733-f089b3b7b21d'),
+    (105, '6m1vf8a1-09e0-4435-a850-0613d778897b', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', 'img07', 1, 'image', 'http://localhost:9090/api/v1/images/posts/3b900a66-2021-49e1-9152-c6d432d1aa52'),
+    (106, '17b9m4z3-09e0-4435-a850-0613d778897b', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', 'img08', 1, 'image', 'http://localhost:9090/api/v1/images/posts/ddc5a29a-c607-44db-95f2-c66f1da21fde'),
+    (107, '5jc8x7v4-09e0-4435-a850-0613d778897b', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', 'img09', 1, 'image', 'http://localhost:9090/api/v1/images/posts/27897c0a-2503-4536-83ed-a65a596646fb');
 
 insert into post (id, uuid, institution_id, user_id, comment_config_id, content_id, post_date, post_type) values
 	(100, '5f9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49','875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2025-02-18T07:53:22', 'GENERAL'),
