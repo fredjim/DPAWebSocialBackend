@@ -74,13 +74,31 @@ public class AuthenticationService {
         String accessToken = jwtGenerator.generarAccessToken(user);
         String refreshToken = jwtGenerator.generarRefreshToken(user);
 
-        updateTokens(user, accessToken);
+        revokeAllUserRefreshTokens(user);
+        saveRefreshTokenToDatabase(user, refreshToken);
 
         return new AuthResponseDTO(accessToken, refreshToken);
     }
 
     public AuthResponseDTO refreshToken(String refreshTokenHeader) {
         String refreshToken = extractToken(refreshTokenHeader);
+
+        // Buscar el refresh token en la base de datos
+        Token tokenEntity = tokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found in database"));
+
+        // Validar que el token no esté revocado ni expirado
+        if (tokenEntity.getIsRevoked() || tokenEntity.getIsExpired()) {
+            throw new IllegalArgumentException("Refresh token is revoked or expired");
+        }
+
+        // Validar que el token sea realmente un refresh token (no access token)
+        long expirationTime = jwtGenerator.getExpirationTime();
+        long refreshExpirationTime = jwtGenerator.getRefreshExpirationTime();
+        if (tokenEntity.getIsExpired() || expirationTime == refreshExpirationTime) {
+            // Si el token está expirado o no es refresh, rechazar
+            throw new IllegalArgumentException("Invalid token type for refresh endpoint");
+        }
 
         validateToken(refreshToken);
 
@@ -98,7 +116,13 @@ public class AuthenticationService {
         String accessToken = jwtGenerator.generarAccessToken(user);
         String newRefreshToken = jwtGenerator.generarRefreshToken(user);
 
-        updateTokens(user, accessToken);
+        // Revocar el refresh token anterior
+        tokenEntity.setIsRevoked(true);
+        tokenEntity.setIsExpired(true);
+        tokenRepository.save(tokenEntity);
+
+        // Guardar el nuevo refresh token
+        saveRefreshTokenToDatabase(user, newRefreshToken);
 
         return new AuthResponseDTO(accessToken, newRefreshToken);
     }
@@ -114,12 +138,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
     }
 
-    private void updateTokens(Users user, String accessToken) {
-        revokeAllUserTokens(user);
-        saveTokenToDatabase(user, accessToken);
-    }
-
-    private void revokeAllUserTokens(Users user) {
+    // Revoca todos los refresh tokens válidos del usuario
+    private void revokeAllUserRefreshTokens(Users user) {
         List<Token> validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
         if (!validUserTokens.isEmpty()) {
             validUserTokens.forEach(token -> {
@@ -130,9 +150,10 @@ public class AuthenticationService {
         }
     }
 
-    private void saveTokenToDatabase(Users user, String token) {
+    // Guarda el refresh token en la base de datos
+    private void saveRefreshTokenToDatabase(Users user, String refreshToken) {
         Token tokenEntity = Token.builder()
-                .token(token)
+                .token(refreshToken)
                 .isRevoked(false)
                 .isExpired(false)
                 .user(user)
@@ -151,5 +172,25 @@ public class AuthenticationService {
         if (!jwtGenerator.validarToken(token)) {
             throw new IllegalArgumentException("Invalid or expired refresh token");
         }
+    }
+
+    public void logout(String refreshTokenHeader) {
+        String refreshToken = extractToken(refreshTokenHeader);
+        Token tokenEntity = tokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found in database"));
+
+        // Validar que el token sea realmente un refresh token
+        long expirationTime = jwtGenerator.getExpirationTime();
+        long refreshExpirationTime = jwtGenerator.getRefreshExpirationTime();
+        if (expirationTime == refreshExpirationTime) {
+            throw new IllegalArgumentException("Solo se permite el uso de refresh token para cerrar sesión.");
+        }
+
+        tokenEntity.setIsRevoked(true);
+        // Si no ha expirado, mantener isExpired=false
+        if (!jwtGenerator.isTokenValid(refreshToken, tokenEntity.getUser())) {
+            tokenEntity.setIsExpired(true);
+        }
+        tokenRepository.save(tokenEntity);
     }
 }
