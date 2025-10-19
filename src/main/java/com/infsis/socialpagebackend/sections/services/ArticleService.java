@@ -60,6 +60,13 @@ public class ArticleService {
                 .findAll()
                 .stream()
                 .filter(article -> !article.isDeleted())
+                // proteger por posibles fechas nulas y ordenar por fecha ascendente (más antigua primero)
+                .sorted((a, b) -> {
+                    if (a.getCreatedDate() == null && b.getDate() == null) return 0;
+                    if (a.getCreatedDate() == null) return 1;
+                    if (b.getCreatedDate() == null) return -1;
+                    return a.getCreatedDate().compareTo(b.getCreatedDate());
+                })
                 .map(article -> articleMapper.toDTO(article))
                 .collect(Collectors.toList());
     }
@@ -68,7 +75,18 @@ public class ArticleService {
         return articleRepository
                 .findAll()
                 .stream()
-                .filter(article -> article.getSection().getUuid().equals(sectionUuid) && !article.isDeleted())
+                .filter(article -> {
+                    if (article == null || article.isDeleted()) return false;
+                    if (article.getSection() == null || article.getSection().getUuid() == null) return false;
+                    return article.getSection().getUuid().equals(sectionUuid);
+                })
+                // ordenar por fecha ascendente
+                .sorted((a, b) -> {
+                    if (a.getCreatedDate() == null && b.getCreatedDate() == null) return 0;
+                    if (a.getCreatedDate() == null) return 1;
+                    if (b.getCreatedDate() == null) return -1;
+                    return a.getCreatedDate().compareTo(b.getCreatedDate());
+                })
                 .map(article -> articleMapper.toDTO(article))
                 .collect(Collectors.toList());
     }
