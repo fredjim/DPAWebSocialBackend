@@ -150,9 +150,19 @@ public class ArticleService {
             throw new NotFoundException("Article", articleUuid);
         }
 
+        // Eliminar todas las medias antiguas si se envían nuevas medias
         if (articleDTO.getMedias() != null) {
-            List<ArticleMedia> medias = saveMedia(articleDTO.getMedias(), foundArticle);
-            foundArticle.setArticle_medias(medias);
+            // Eliminar las medias antiguas de la base de datos
+            if (foundArticle.getArticle_medias() != null && !foundArticle.getArticle_medias().isEmpty()) {
+                foundArticle.getArticle_medias().forEach(media -> {
+                    media.setDeleted(true);
+                    articleMediaRepository.save(media);
+                });
+            }
+            
+            // Guardar las nuevas medias
+            List<ArticleMedia> newMedias = saveMedia(articleDTO.getMedias(), foundArticle);
+            foundArticle.setArticle_medias(newMedias);
         }
 
         if (articleDTO.getSection_id() != null) {
