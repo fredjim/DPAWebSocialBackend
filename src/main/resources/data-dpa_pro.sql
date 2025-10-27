@@ -8,8 +8,8 @@ insert into role(id_role, name) values
     (7, 'ADMIN_CUDIE');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path) values
-    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Micael', 'Guzman', 'micael.guzman@dpa.umss.edu.bo', '71795251', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://dpa.umss.net/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
-    (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'Valentin', 'Laime Zapata', 'valentin.laime@umss.edu.bo', '70755958', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, 'http://dpa.umss.net/api/v1/images/users/e867fa32-75b7-4c3c-8943-4a2808c10ac0'),
+    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Mguzman', 'Guzman', 'micael.guzman@dpa.umss.edu.bo', '71795251', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://dpa.umss.net/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
+    (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'VLaime', 'Laime Zapata', 'valentin.laime@umss.edu.bo', '70755958', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, 'http://dpa.umss.net/api/v1/images/users/e867fa32-75b7-4c3c-8943-4a2808c10ac0'),
     (110, '9bae1fe0-2c56-4091-883d-15458e051500', 'Emely', 'Fernandez Soliz', 'admin-convenios@umss.edu', '69577142', '$2a$10$ElXlBz1WzNDhanqtCmszb.bub/iKGcNQgcbr31MQe9wjsiim7Q5zG', null, 'http://dpa.umss.net/api/v1/images/users/733b01ba-198e-42db-b9ca-d7ace9a7abad'),
     (111, '844b324d-2f5e-41c9-b726-0149eeb01157', 'Javier', 'Lopez Canedo', 'admin-proyectos@umss.edu', '71852821', '$2a$10$Gm0O/HK8qXeqa/XPvrm4/uAQj2.G3XdKOHg8XTxG4Gif1UYDPcbEa', null, 'http://dpa.umss.net/api/v1/images/users/06b8fbe5-9d91-422b-bd20-6d89d23e5608'),
     (112, '2e121a51-24b5-4aad-92c2-150997ec4266', 'Leonardo', 'Beltran Ramirez', 'admin-becas@umss.edu', '75891148', '$2a$10$vs8E1jwz6Z3BBitXHP.Y/uVQ0pNkqHhXf0oQCFH7Nf/rjccHL2lCO', null, 'http://dpa.umss.net/api/v1/images/users/b5de2b13-4720-41e7-87d2-d31abd590fac'),
@@ -456,7 +456,7 @@ insert into article (id, uuid, section_id, user_id, title, text, created_date) v
     (174, '915ib4e8-0856-4aad-b3aa-747e2dba76d9', '945ib4e8-0856-4aad-b3aa-747e2dba76d9', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Apoyo en Recepci\00F3n de Documentos de Certificados de Notas y Conclusi\00F3n de Plan de Estudios', U&'<ul><li>Apoyar en la recepci\00F3n y verificaci\00F3n de la documentaci\00F3n solicitada por los Responsables de Certificado de Notas y Certificado de Conclusi\00F3n de Plan de Estudios.</li></ul>', '2024-12-12T08:00:59');
 
 insert into article_media (id, uuid, article_id, file_name, number, file_type, file_path) values
-	(100, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', '819ab4e8-0856-4aad-b3aa-747e2dba76d9', 'directora-dpa', 1, 'image', 'http://dpa.umss.net/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5'),
+	(100, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', '819ab4e8-0856-4aad-b3aa-747e2dba76d9', 'director-dpa', 1, 'image', 'http://dpa.umss.net/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5'),
     (101, 'e7629149-79db-4bc6-85c9-12fa52d35c34', '846ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-dca', 1, 'image', 'http://dpa.umss.net/api/v1/images/posts/e7629149-79db-4bc6-85c9-12fa52d35c34'),
     (102, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '855ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-dcc', 1, 'image', 'http://dpa.umss.net/api/v1/images/posts/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
     (103, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', '861ib4e8-0856-4aad-b3aa-747e2dba76d9', 'jefe-dpa', 1, 'image', 'http://dpa.umss.net/api/v1/images/posts/f47ac10b-58cc-4372-a567-0e02b2c3d479'),
