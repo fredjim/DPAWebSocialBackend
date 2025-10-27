@@ -456,7 +456,7 @@ insert into article (id, uuid, section_id, user_id, title, text, created_date) v
     (174, '915ib4e8-0856-4aad-b3aa-747e2dba76d9', '945ib4e8-0856-4aad-b3aa-747e2dba76d9', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Apoyo en Recepci\00F3n de Documentos de Certificados de Notas y Conclusi\00F3n de Plan de Estudios', U&'<ul><li>Apoyar en la recepci\00F3n y verificaci\00F3n de la documentaci\00F3n solicitada por los Responsables de Certificado de Notas y Certificado de Conclusi\00F3n de Plan de Estudios.</li></ul>', '2024-12-12T08:00:59');
 
 insert into article_media (id, uuid, article_id, file_name, number, file_type, file_path) values
-	(100, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', '819ab4e8-0856-4aad-b3aa-747e2dba76d9', 'directora-dpa', 1, 'image', 'http://localhost:9091/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5'),
+	(100, 'a5a0a99c-6280-4b74-a507-12a5a2109cd5', '819ab4e8-0856-4aad-b3aa-747e2dba76d9', 'director-dpa', 1, 'image', 'http://localhost:9091/api/v1/images/posts/a5a0a99c-6280-4b74-a507-12a5a2109cd5'),
     (101, 'e7629149-79db-4bc6-85c9-12fa52d35c34', '846ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-dca', 1, 'image', 'http://localhost:9091/api/v1/images/posts/e7629149-79db-4bc6-85c9-12fa52d35c34'),
     (102, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '855ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-dcc', 1, 'image', 'http://localhost:9091/api/v1/images/posts/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
     (103, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', '861ib4e8-0856-4aad-b3aa-747e2dba76d9', 'jefe-dpa', 1, 'image', 'http://localhost:9091/api/v1/images/posts/f47ac10b-58cc-4372-a567-0e02b2c3d479'),
