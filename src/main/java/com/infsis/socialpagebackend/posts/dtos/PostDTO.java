@@ -21,6 +21,10 @@ public class PostDTO {
     @Size(min = 36, max = 40)
     private String user_id;
 
+    private String name;
+
+    private String lastName;
+
     @NotBlank
     @Size(min = 36, max = 40)
     private String comment_config_id;

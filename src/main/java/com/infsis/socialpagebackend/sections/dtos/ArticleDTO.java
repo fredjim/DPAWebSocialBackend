@@ -27,7 +27,6 @@ public class ArticleDTO {
     @NotNull
     private String text;
 
-    @NotNull
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private Date date;
 
