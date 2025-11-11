@@ -28,6 +28,11 @@ public class ArticleController {
         return articleService.getAllArticles();
     }
 
+    @GetMapping("/section/{sectionUuid}")
+    public List<ArticleDTO> getAllBySection(@PathVariable String sectionUuid) {
+        return articleService.getAllBySection(sectionUuid);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ArticleDTO create(@Valid @RequestBody ArticleDTO articleDTO) {

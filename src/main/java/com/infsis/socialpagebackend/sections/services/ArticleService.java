@@ -60,6 +60,13 @@ public class ArticleService {
                 .findAll()
                 .stream()
                 .filter(article -> !article.isDeleted())
+                // proteger por posibles fechas nulas y ordenar por fecha ascendente (más antigua primero)
+                .sorted((a, b) -> {
+                    if (a.getCreatedDate() == null && b.getDate() == null) return 0;
+                    if (a.getCreatedDate() == null) return 1;
+                    if (b.getCreatedDate() == null) return -1;
+                    return a.getCreatedDate().compareTo(b.getCreatedDate());
+                })
                 .map(article -> articleMapper.toDTO(article))
                 .collect(Collectors.toList());
     }
@@ -68,7 +75,18 @@ public class ArticleService {
         return articleRepository
                 .findAll()
                 .stream()
-                .filter(article -> article.getSection().getUuid().equals(sectionUuid) && !article.isDeleted())
+                .filter(article -> {
+                    if (article == null || article.isDeleted()) return false;
+                    if (article.getSection() == null || article.getSection().getUuid() == null) return false;
+                    return article.getSection().getUuid().equals(sectionUuid);
+                })
+                // ordenar por fecha ascendente
+                .sorted((a, b) -> {
+                    if (a.getCreatedDate() == null && b.getCreatedDate() == null) return 0;
+                    if (a.getCreatedDate() == null) return 1;
+                    if (b.getCreatedDate() == null) return -1;
+                    return a.getCreatedDate().compareTo(b.getCreatedDate());
+                })
                 .map(article -> articleMapper.toDTO(article))
                 .collect(Collectors.toList());
     }
@@ -132,9 +150,19 @@ public class ArticleService {
             throw new NotFoundException("Article", articleUuid);
         }
 
+        // Eliminar todas las medias antiguas si se envían nuevas medias
         if (articleDTO.getMedias() != null) {
-            List<ArticleMedia> medias = saveMedia(articleDTO.getMedias(), foundArticle);
-            foundArticle.setArticle_medias(medias);
+            // Eliminar las medias antiguas de la base de datos
+            if (foundArticle.getArticle_medias() != null && !foundArticle.getArticle_medias().isEmpty()) {
+                foundArticle.getArticle_medias().forEach(media -> {
+                    media.setDeleted(true);
+                    articleMediaRepository.save(media);
+                });
+            }
+            
+            // Guardar las nuevas medias
+            List<ArticleMedia> newMedias = saveMedia(articleDTO.getMedias(), foundArticle);
+            foundArticle.setArticle_medias(newMedias);
         }
 
         if (articleDTO.getSection_id() != null) {

@@ -23,6 +23,8 @@ public class PostMapper {
         postDTO.setInstitution_id(post.getInstitution().getUuid());
         postDTO.setPost_type(post.getPost_type());
         postDTO.setUser_id(post.getUsers().getUuid());
+        postDTO.setName(post.getUsers().getName());
+        postDTO.setLastName(post.getUsers().getLastName());
         postDTO.setComment_config_id(post.getComment_conf().getUuid());
         postDTO.setDate(post.getPost_date());
 
@@ -35,6 +37,8 @@ public class PostMapper {
         postDTO.setInstitution_id(post.getInstitution().getUuid());
         postDTO.setPost_type(post.getPost_type());
         postDTO.setUser_id(post.getUsers().getUuid());
+        postDTO.setName(post.getUsers().getName());
+        postDTO.setLastName(post.getUsers().getLastName());
         postDTO.setComment_config_id(post.getComment_conf().getUuid());
         postDTO.setDate(post.getPost_date());
         postDTO.setContent(contentMapper.toDTO(post.getContent()));
