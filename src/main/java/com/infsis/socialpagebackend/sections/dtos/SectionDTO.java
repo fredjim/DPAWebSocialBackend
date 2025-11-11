@@ -20,6 +20,9 @@ public class SectionDTO {
     @Size(min = 36, max = 40)
     private String user_id;
 
+    @Size(min = 36, max = 40)
+    private String nav_item_id;
+
     @NotNull
     private String name;
 
