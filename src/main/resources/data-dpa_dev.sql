@@ -363,14 +363,21 @@ SELECT r.id_role, p.id_permission FROM role r, permissions p
 WHERE r.name = 'MODERATOR'
 AND p.name_permission IN ('VIEW_MODERATED_COMMENTS','VIEW_REJECTED_COMMENTS','APPROVE_COMMENT','REJECT_COMMENT','DELETE_MODERATED_COMMENT','VIEW_DELETED_COMMENTS');
 
-insert into section (id, uuid, institution_id, user_id, name, date) values
-	(100, '919ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Presentaci\00F3n', '2024-12-02T07:53:22'),
-    (101, '923ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Coordinaci\00F3n Acad\00E9mica', '2024-12-02T19:31:22'),
-    (102, '939db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Desarrollo Curricular', '2024-12-03T08:00:22'),
-    (103, '942ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Personal Acad\00E9mico', '2024-12-04T08:00:22'),
-    (104, '943ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Titulaci\00F3n Alternativa', '2024-12-05T08:00:22'),
-    (105, '944ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Seguimiento Acad\00E9mico', '2024-12-06T08:00:22'),
-    (106, '945ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Registro e Inscripciones', '2024-12-07T08:00:22');
+insert into nav_item (id, uuid, user_id, institution_id, label, url, visible, item_order, created_date) values
+	(200, 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'Informacion', '/informacion', true, 1, '2025-01-01T08:00:00'),
+	(201, 'e2b4f7c3-0a5b-4c6d-9e66-2b3c4d5e6f71', 'eab72365-d8c1-45df-9b48-274f64c65b86', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'Coordinacion', '/coordinacion', true, 2, '2025-01-02T09:30:00'),
+	(202, 'f3c5g8d4-1b6c-4d7e-0f77-3c4d5e6f7a82', '9bae1fe0-2c56-4091-883d-15458e051500', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'Curriculum', '/curriculum', true, 3, '2025-01-03T10:45:00'),
+	(203, 'a4d6h9e5-2c7d-4e8f-1g88-4d5e6f7a8b93', '844b324d-2f5e-41c9-b726-0149eeb01157', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'Recursos', '/recursos', true, 4, '2025-01-04T11:15:00'),
+	(204, 'b5e7i0f6-3d8e-4f9g-2h99-5e6f7a8b9c04', '2e121a51-24b5-4aad-92c2-150997ec4266', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'Contacto', '/contacto', true, 5, '2025-01-05T12:00:00');
+
+insert into section (id, uuid, institution_id, user_id, nav_item_id, name, date) values
+	(100, '919ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', U&'Presentaci\00F3n', '2024-12-02T07:53:22'),
+    (101, '923ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', U&'Coordinaci\00F3n Acad\00E9mica', '2024-12-02T19:31:22'),
+    (102, '939db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', 'Desarrollo Curricular', '2024-12-03T08:00:22'),
+    (103, '942ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', U&'Personal Acad\00E9mico', '2024-12-04T08:00:22'),
+    (104, '943ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', U&'Titulaci\00F3n Alternativa', '2024-12-05T08:00:22'),
+    (105, '944ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', U&'Seguimiento Acad\00E9mico', '2024-12-06T08:00:22'),
+    (106, '945ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'd1a3f6b2-9f4a-4b2e-8c55-1a2b3c4d5e60', 'Registro e Inscripciones', '2024-12-07T08:00:22');
 
 insert into article (id, uuid, section_id, user_id, title, text, created_date) values
 	(100, '819ab4e8-0856-4aad-b3aa-747e2dba76d9', '919ab4e8-0856-4aad-b3aa-747e2dba76d9', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', U&'Presentaci\00F3n', U&'De acuerdo con el Estatuto Org\00E1nico, la Direcci\00F3n de Planificaci\00F3n Acad\00E9mica define, en base a las determinaciones del Consejo Universitario las l\00EDneas generales de la pol\00EDtica acad\00E9mica universitaria y se ocupa de la incorporaci\00F3n de docentes y estudiantes de la Universidad Mayor de San Sim\00F3n.', '2024-12-02T07:53:22'),
