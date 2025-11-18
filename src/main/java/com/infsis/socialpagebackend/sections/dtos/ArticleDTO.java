@@ -31,4 +31,6 @@ public class ArticleDTO {
     private Date date;
 
     private List<ArticleMediaDTO> medias;
+
+    private List<LinkDTO> links;
 }
