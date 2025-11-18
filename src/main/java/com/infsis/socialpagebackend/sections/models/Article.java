@@ -55,6 +55,10 @@ public class Article {
     @OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE)
     private List<ArticleMedia> article_medias;
 
+    // Enlaces asociados al artículo
+    // @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<com.infsis.socialpagebackend.sections.models.Link> links;
+
     @CreatedDate
     @Column(updatable = false)
     private Date createdDate;

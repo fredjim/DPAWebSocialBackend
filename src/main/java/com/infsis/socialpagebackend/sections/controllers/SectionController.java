@@ -50,4 +50,9 @@ public class SectionController {
     public SectionDTO update(@PathVariable String sectionUuid, @Valid @RequestBody SectionDTO sectionDTO) {
         return sectionService.updateSection(sectionUuid, sectionDTO);
     }
+
+    @GetMapping("/by-nav/{navItemUuid}")
+    public List<SectionDTO> getByNavItem(@PathVariable String navItemUuid) {
+        return sectionService.getSectionsByNavItem(navItemUuid);
+    }
 }

@@ -15,6 +15,8 @@ import com.infsis.socialpagebackend.sections.models.Section;
 import com.infsis.socialpagebackend.sections.repositories.ArticleMediaRepository;
 import com.infsis.socialpagebackend.sections.repositories.ArticleRepository;
 import com.infsis.socialpagebackend.sections.repositories.SectionRepository;
+import com.infsis.socialpagebackend.navigation.models.NavItem;
+import com.infsis.socialpagebackend.navigation.repositories.NavItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -52,6 +54,9 @@ public class SectionService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NavItemRepository navItemRepository;
 
 
 
@@ -99,7 +104,12 @@ public class SectionService {
         if (user != null) {
             List<Article> articles = saveArticles(sectionDTO.getArticles(), section, user);
 
-            section = sectionMapper.getSection(sectionDTO, institution, user);
+            NavItem navItem = null;
+            if (sectionDTO.getNav_item_id() != null) {
+                navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
+            }
+
+            section = sectionMapper.getSection(sectionDTO, institution, user, navItem);
             section.setArticles(articles);
 
             sectionRepository.save(section);
@@ -153,6 +163,12 @@ public class SectionService {
             foundSection.setArticles(articles);
         }
 
+        // Resolver navItem si viene en DTO
+        if (sectionDTO.getNav_item_id() != null) {
+            NavItem navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
+            foundSection.setNavItem(navItem);
+        }
+
         foundSection.setDate(sectionDTO.getDate());
         foundSection.setName(sectionDTO.getName());
 
@@ -161,7 +177,11 @@ public class SectionService {
         return sectionMapper.toDTO(updatedSection);
     }
 
-
-
+    public List<SectionDTO> getSectionsByNavItem(String navItemUuid) {
+        return sectionRepository.findByNavItemUuid(navItemUuid)
+                .stream()
+                .map(section -> sectionMapper.toDTO(section))
+                .collect(Collectors.toList());
+    }
 
 }

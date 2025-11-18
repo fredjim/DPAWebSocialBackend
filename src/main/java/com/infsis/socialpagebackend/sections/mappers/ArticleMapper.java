@@ -1,18 +1,12 @@
 package com.infsis.socialpagebackend.sections.mappers;
 
 import com.infsis.socialpagebackend.authentication.models.Users;
-import com.infsis.socialpagebackend.comments.dtos.CommentCounterDTO;
-import com.infsis.socialpagebackend.institutions.models.Institution;
-import com.infsis.socialpagebackend.posts.dtos.PostDTO;
-import com.infsis.socialpagebackend.posts.dtos.ReactionCounterDTO;
-import com.infsis.socialpagebackend.posts.models.CommentConfig;
-import com.infsis.socialpagebackend.posts.models.Content;
-import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
-import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
 import com.infsis.socialpagebackend.sections.models.Article;
 import com.infsis.socialpagebackend.sections.models.ArticleMedia;
 import com.infsis.socialpagebackend.sections.models.Section;
+import com.infsis.socialpagebackend.enums.OwnerType;
+import com.infsis.socialpagebackend.sections.repositories.LinkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +18,12 @@ public class ArticleMapper {
 
     @Autowired
     private ArticleMediaMapper articleMediaMapper;
+
+    @Autowired
+    private LinkMapper linkMapper;
+
+    @Autowired
+    private LinkRepository linkRepository;
 
     public ArticleDTO toDTO(Article article) {
 
@@ -41,6 +41,17 @@ public class ArticleMapper {
                                 .map(media -> articleMediaMapper.toDTO(media))
                                 .collect(Collectors.toList())
         );
+
+        // mapear enlaces si existen: cargarlos desde LinkRepository
+        List<com.infsis.socialpagebackend.sections.models.Link> links = linkRepository.findAllByOwnerTypeAndOwnerUuidAndDeletedFalse(OwnerType.ARTICLE, article.getUuid());
+        if (links != null) {
+            articleDTO.setLinks(
+                    links
+                            .stream()
+                            .map(link -> linkMapper.toDTO(link))
+                            .collect(Collectors.toList())
+            );
+        }
 
         return articleDTO;
     }
