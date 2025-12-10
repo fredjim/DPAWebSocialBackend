@@ -150,19 +150,10 @@ public class SectionService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
-        log.info("User id :" + user.getUuid());
-
         Section foundSection = sectionRepository.findOneByUuid(sectionUuid);
         if (foundSection == null || foundSection.isDeleted()) {
             throw new NotFoundException("Section", sectionUuid);
         }
-        /*
-        if (foundSection.getArticles() != null) {
-
-            List<Article> articles = saveArticles(sectionDTO.getArticles(), foundSection, user);
-            foundSection.setArticles(articles);
-        }
-        */
 
         // Resolver navItem si viene en DTO
         if (sectionDTO.getNav_item_id() != null) {
