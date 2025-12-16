@@ -14,3 +14,9 @@ public @interface ValidDocumentFile {
     Class<?>[] groups() default {};
     String message() default "Only pdf files are allowed";
 }
+//validar si no hay archivos cargados
+//validar si el archivo es nulo o esta vacio
+//validar el tipo de contenido del archivo (solo pdf)
+//retornar true si todas las validaciones pasan
+//retornar false si alguna validacion falla
+//usar esta anotacion en los campos de tipo MultipartFile que deban ser validados como archivos pdf

@@ -76,4 +76,22 @@ public class ErrorHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(java.io.IOException.class)
+    public ResponseEntity<ErrorResponse> handleIOException(java.io.IOException ex) {
+        ErrorResponse error = new ErrorResponse(500, "Error al procesar el archivo: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(com.infsis.socialpagebackend.medias.exceptions.FileStorageException.class)
+    public ResponseEntity<ErrorResponse> handleFileStorageException(com.infsis.socialpagebackend.medias.exceptions.FileStorageException ex) {
+        ErrorResponse error = new ErrorResponse(500, "Error de almacenamiento: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(com.infsis.socialpagebackend.medias.exceptions.InvalidFileException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFileException(com.infsis.socialpagebackend.medias.exceptions.InvalidFileException ex) {
+        ErrorResponse error = new ErrorResponse(400, "Archivo inválido: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
 }
