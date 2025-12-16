@@ -35,6 +35,7 @@ public class ImageStorageService {
     private static final String PNG_IMAGE_TYPE = "image/png";
     private static final String JPG_IMAGE_TYPE = "image/jpg";
     private static final String JPEG_IMAGE_TYPE = "image/jpeg";
+    private static final String WEBP_IMAGE_TYPE = "image/webp";
 
     @Autowired
     private ImageFileRepository imageFileRepository;
@@ -86,12 +87,16 @@ public class ImageStorageService {
             throw new NotFoundException("File:", filename);
         }
         MediaType imageContentType = new MediaType(MediaType.IMAGE_JPEG);
-        if (file.getType().equals(PNG_IMAGE_TYPE)) {
-            imageContentType = MediaType.IMAGE_PNG;
-        } else if (file.getType().equals(JPEG_IMAGE_TYPE) || file.getType().equals(JPG_IMAGE_TYPE)) {
-            imageContentType = MediaType.IMAGE_JPEG;
-        }
+        if (file.getType().equals(WEBP_IMAGE_TYPE)) {
+            imageContentType = new MediaType("image", "webp");
+        } else {
+            if (file.getType().equals(PNG_IMAGE_TYPE)) {
+                imageContentType = MediaType.IMAGE_PNG;
+            } else if (file.getType().equals(JPEG_IMAGE_TYPE) || file.getType().equals(JPG_IMAGE_TYPE)) {
+                imageContentType = MediaType.IMAGE_JPEG;
 
+            }
+        }
         try {
             Path filePath = Paths.get(pathImages).resolve(filename);
             Resource resource = new UrlResource(filePath.toUri());
