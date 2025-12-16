@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.validation;
 
+import com.infsis.socialpagebackend.constants.ImageContentTypes;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,6 @@ public class ImageFileValidator implements ConstraintValidator<ValidImageFile, M
         if (file == null) {
             return false;
         }
-        String contentType = file.getContentType();
-        return contentType != null && (contentType.equals("image/jpeg") || contentType.equals("image/png"));
+        return ImageContentTypes.isSupported(file.getContentType());
     }
 }

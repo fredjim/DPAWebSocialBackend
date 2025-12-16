@@ -1,6 +1,7 @@
 package com.infsis.socialpagebackend.medias.services;
 
 import com.infsis.socialpagebackend.configuration.ServerProperties;
+import com.infsis.socialpagebackend.constants.ImageContentTypes;
 import com.infsis.socialpagebackend.medias.dtos.ImageFileDTO;
 import com.infsis.socialpagebackend.medias.mappers.ImageFileMapper;
 import com.infsis.socialpagebackend.enums.FileStatus;
@@ -30,12 +31,6 @@ import java.nio.file.Files;
 
 @Component
 public class ImageStorageService {
-
-    private static final String SECURE_PORT = "443";
-    private static final String PNG_IMAGE_TYPE = "image/png";
-    private static final String JPG_IMAGE_TYPE = "image/jpg";
-    private static final String JPEG_IMAGE_TYPE = "image/jpeg";
-    private static final String WEBP_IMAGE_TYPE = "image/webp";
 
     @Autowired
     private ImageFileRepository imageFileRepository;
@@ -86,17 +81,7 @@ public class ImageStorageService {
         if(file == null) {
             throw new NotFoundException("File:", filename);
         }
-        MediaType imageContentType = new MediaType(MediaType.IMAGE_JPEG);
-        if (file.getType().equals(WEBP_IMAGE_TYPE)) {
-            imageContentType = new MediaType("image", "webp");
-        } else {
-            if (file.getType().equals(PNG_IMAGE_TYPE)) {
-                imageContentType = MediaType.IMAGE_PNG;
-            } else if (file.getType().equals(JPEG_IMAGE_TYPE) || file.getType().equals(JPG_IMAGE_TYPE)) {
-                imageContentType = MediaType.IMAGE_JPEG;
-
-            }
-        }
+        MediaType imageContentType = determineMediaType(file.getType());
         try {
             Path filePath = Paths.get(pathImages).resolve(filename);
             Resource resource = new UrlResource(filePath.toUri());
@@ -113,6 +98,29 @@ public class ImageStorageService {
         }
 
     }
+
+    /**
+     * Determina el MediaType correcto basado en el tipo de contenido del archivo
+     * @param contentType el tipo de contenido del archivo
+     * @return MediaType correspondiente
+     */
+    private MediaType determineMediaType(String contentType) {
+        if (contentType == null) {
+            return MediaType.IMAGE_JPEG; // default
+        }
+
+        switch (contentType.toLowerCase()) {
+            case ImageContentTypes.PNG:
+                return MediaType.IMAGE_PNG;
+            case ImageContentTypes.WEBP:
+                return new MediaType("image", "webp");
+            case ImageContentTypes.JPEG:
+            case ImageContentTypes.JPG:
+            default:
+                return MediaType.IMAGE_JPEG;
+        }
+    }
+
     /**Eliminar una imagen por su UUID*/
     public void deleteImage(String filename, String directory) {
         ImageFile imageFile = imageFileRepository.findOneByUuid(filename);
