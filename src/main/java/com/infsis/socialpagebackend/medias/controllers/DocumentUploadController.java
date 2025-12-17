@@ -29,10 +29,17 @@ public class DocumentUploadController {
     private DocumentStorageService documentStorageService;
 
     @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
+    @PostMapping("/articles")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<DocumentFileDTO> handleFileUploadDocs(@RequestParam(name = "files", required = true) List<MultipartFile> files) {
+        return documentStorageService.storeFiles(files);
+    }
+
+    @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<DocumentFileDTO> handleFileUpload(@RequestParam("file") List<MultipartFile> files) {
-        return documentStorageService.storeFile(files);
+    public DocumentFileDTO handleFileUpload(@RequestParam(name = "file", required = true) MultipartFile file) {
+        return documentStorageService.storeFile(file);
     }
 
     @GetMapping("/{documentUuid}/info")

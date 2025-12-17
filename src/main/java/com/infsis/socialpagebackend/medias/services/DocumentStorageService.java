@@ -100,54 +100,99 @@ public class DocumentStorageService {
         }
     }
 
+    /**
+     * Almacena múltiples archivos y retorna una lista de DTOs
+     * @param files Lista de archivos a almacenar
+     * @return Lista de DTOs con información de los archivos almacenados
+     */
     @Transactional
-    public List<DocumentFileDTO> storeFile(List<MultipartFile> files) {
-        // validacion global
+    public List<DocumentFileDTO> storeFiles(List<MultipartFile> files) {
+        logger.info("Starting batch file upload process for {} files", files.size());
+
+        // Validación global
         fileValidatorDoc.validate(files);
 
-        // Lista de respuestas
+        // Procesar cada archivo y crear lista de respuestas
         List<DocumentFileDTO> responses = new ArrayList<>();
-
         for (MultipartFile file : files) {
-            logger.info("Starting file upload process for: {}", file.getOriginalFilename());
-
-            String uniqueFileName = UUID.randomUUID().toString();
-            logger.info("Generated UUID for file: {} -> {}", file.getOriginalFilename(), uniqueFileName);
-
-            try {
-                // Store file using strategy
-                String storedFilePath = fileStorageStrategy.storeFile(
-                        file,
-                        fileStorageProperties.getDocumentUploadDir(),
-                        uniqueFileName
-                );
-
-                // Build download URL using configuration
-                String downloadUrl = appUrlProperties.buildDocumentUrl(uniqueFileName);
-
-                // Create DTO
-                DocumentFileDTO documentFileDTO = new DocumentFileDTO();
-                documentFileDTO.setUuid(uniqueFileName);
-                documentFileDTO.setName(file.getOriginalFilename());
-                documentFileDTO.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
-                documentFileDTO.setType(file.getContentType());
-                documentFileDTO.setUrlResource(downloadUrl);
-
-                // Save to database
-                documentFileRepository.save(documentFileMapper.getFile(documentFileDTO));
-
-                logger.info("File uploaded successfully: {} (size: {} bytes)", uniqueFileName, file.getSize());
-
-                responses.add(documentFileDTO);
-
-            } catch (IOException e) {
-                logger.error("Error storing file: {}", file.getOriginalFilename(), e);
-                throw new FileStorageException("Error storing file: " + file.getOriginalFilename(), e);
-            }
-
+            DocumentFileDTO result = processSingleFile(file);
+            responses.add(result);
         }
+
+        logger.info("Batch file upload completed successfully. {} files processed", responses.size());
         return responses;
     }
+
+    /**
+     * Almacena un solo archivo y retorna su DTO
+     * Método conveniente para cuando solo necesitas procesar un archivo
+     * @param file Archivo a almacenar
+     * @return DTO con información del archivo almacenado
+     */
+    @Transactional
+    public DocumentFileDTO storeFile(MultipartFile file) {
+        logger.info("Starting single file upload process for: {}", file.getOriginalFilename());
+
+        // Convertir a lista y usar el método principal
+        List<MultipartFile> files = List.of(file);
+        List<DocumentFileDTO> results = storeFiles(files);
+
+        // Retornar el primer (y único) resultado
+        return results.get(0);
+    }
+
+    /**
+     * Procesa un solo archivo: genera UUID, almacena físicamente, crea DTO y guarda en BD
+     * Método privado que contiene la lógica común de procesamiento
+     * @param file Archivo a procesar
+     * @return DTO con información del archivo procesado
+     * @throws FileStorageException si ocurre un error durante el almacenamiento
+     */
+    private DocumentFileDTO processSingleFile(MultipartFile file) {
+        logger.info("Starting file upload process for: {}", file.getOriginalFilename());
+
+        String uniqueFileName = UUID.randomUUID().toString();
+        logger.info("Generated UUID for file: {} -> {}", file.getOriginalFilename(), uniqueFileName);
+
+        try {
+            // Store file using strategy
+            String storedFilePath = fileStorageStrategy.storeFile(
+                    file,
+                    fileStorageProperties.getDocumentUploadDir(),
+                    uniqueFileName
+            );
+
+            // Build download URL using configuration
+            String downloadUrl = appUrlProperties.buildDocumentUrl(uniqueFileName);
+
+            // Create DTO using helper method
+            DocumentFileDTO documentFileDTO = createDocumentFileDTO(file, uniqueFileName, downloadUrl);
+
+            // Save to database
+            documentFileRepository.save(documentFileMapper.getFile(documentFileDTO));
+
+            logger.info("File uploaded successfully: {} (size: {} bytes)", uniqueFileName, file.getSize());
+
+            return documentFileDTO;
+
+        } catch (IOException e) {
+            logger.error("Error storing file: {}", file.getOriginalFilename(), e);
+            throw new FileStorageException("Error storing file: " + file.getOriginalFilename(), e);
+        }
+    }
+
+    /** Método privado para centralizar la creación de DTOs ***/
+
+    private DocumentFileDTO createDocumentFileDTO(MultipartFile file, String uniqueFileName, String downloadUrl) {
+        DocumentFileDTO documentFileDTO = new DocumentFileDTO();
+        documentFileDTO.setUuid(uniqueFileName);
+        documentFileDTO.setName(file.getOriginalFilename());
+        documentFileDTO.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
+        documentFileDTO.setType(file.getContentType());
+        documentFileDTO.setUrlResource(downloadUrl);
+        return documentFileDTO;
+    }
+
 
     @Transactional
     public void deleteDocument(String documentUuid) {
