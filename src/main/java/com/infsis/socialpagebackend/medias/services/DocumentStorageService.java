@@ -7,12 +7,12 @@ import com.infsis.socialpagebackend.enums.*;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.medias.dtos.DocumentFileDTO;
 import com.infsis.socialpagebackend.medias.exceptions.FileStorageException;
-import com.infsis.socialpagebackend.medias.exceptions.InvalidFileException;
 import com.infsis.socialpagebackend.medias.mappers.DocumentFileMapper;
 import com.infsis.socialpagebackend.medias.models.DocumentFile;
 import com.infsis.socialpagebackend.medias.repositories.DocumentFileRepository;
 import com.infsis.socialpagebackend.medias.storage.FileStorageStrategy;
 import com.infsis.socialpagebackend.posts.repositories.MediaRepository;
+import com.infsis.socialpagebackend.validation.FileValidatorDoc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +22,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class DocumentStorageService {
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentStorageService.class);
+
+    private final FileValidatorDoc fileValidatorDoc;
+
+    public DocumentStorageService(FileValidatorDoc fileValidatorDoc) {
+        this.fileValidatorDoc = fileValidatorDoc;
+    }
 
     @Autowired
     private DocumentFileRepository documentFileRepository;
@@ -93,64 +101,52 @@ public class DocumentStorageService {
     }
 
     @Transactional
-    public DocumentFileDTO storeFile(MultipartFile file) {
-        logger.info("Starting file upload process for: {}", file.getOriginalFilename());
+    public List<DocumentFileDTO> storeFile(List<MultipartFile> files) {
+        // validacion global
+        fileValidatorDoc.validate(files);
 
-        // Validate file
-        validateFile(file);
+        // Lista de respuestas
+        List<DocumentFileDTO> responses = new ArrayList<>();
 
-        String uniqueFileName = UUID.randomUUID().toString();
-        logger.info("Generated UUID for file: {} -> {}", file.getOriginalFilename(), uniqueFileName);
+        for (MultipartFile file : files) {
+            logger.info("Starting file upload process for: {}", file.getOriginalFilename());
 
-        try {
-            // Store file using strategy
-            String storedFilePath = fileStorageStrategy.storeFile(
-                file,
-                fileStorageProperties.getDocumentUploadDir(),
-                uniqueFileName
-            );
+            String uniqueFileName = UUID.randomUUID().toString();
+            logger.info("Generated UUID for file: {} -> {}", file.getOriginalFilename(), uniqueFileName);
 
-            // Build download URL using configuration
-            String downloadUrl = appUrlProperties.buildDocumentUrl(uniqueFileName);
+            try {
+                // Store file using strategy
+                String storedFilePath = fileStorageStrategy.storeFile(
+                        file,
+                        fileStorageProperties.getDocumentUploadDir(),
+                        uniqueFileName
+                );
 
-            // Create DTO
-            DocumentFileDTO documentFileDTO = new DocumentFileDTO();
-            documentFileDTO.setUuid(uniqueFileName);
-            documentFileDTO.setName(file.getOriginalFilename());
-            documentFileDTO.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
-            documentFileDTO.setType(file.getContentType());
-            documentFileDTO.setUrlResource(downloadUrl);
+                // Build download URL using configuration
+                String downloadUrl = appUrlProperties.buildDocumentUrl(uniqueFileName);
 
-            // Save to database
-            documentFileRepository.save(documentFileMapper.getFile(documentFileDTO));
+                // Create DTO
+                DocumentFileDTO documentFileDTO = new DocumentFileDTO();
+                documentFileDTO.setUuid(uniqueFileName);
+                documentFileDTO.setName(file.getOriginalFilename());
+                documentFileDTO.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
+                documentFileDTO.setType(file.getContentType());
+                documentFileDTO.setUrlResource(downloadUrl);
 
-            logger.info("File uploaded successfully: {} (size: {} bytes)",
-                       uniqueFileName, file.getSize());
+                // Save to database
+                documentFileRepository.save(documentFileMapper.getFile(documentFileDTO));
 
-            return documentFileDTO;
+                logger.info("File uploaded successfully: {} (size: {} bytes)", uniqueFileName, file.getSize());
 
-        } catch (IOException e) {
-            logger.error("Error storing file: {}", file.getOriginalFilename(), e);
-            throw new FileStorageException("Error storing file: " + file.getOriginalFilename(), e);
+                responses.add(documentFileDTO);
+
+            } catch (IOException e) {
+                logger.error("Error storing file: {}", file.getOriginalFilename(), e);
+                throw new FileStorageException("Error storing file: " + file.getOriginalFilename(), e);
+            }
+
         }
-    }
-
-    private void validateFile(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new InvalidFileException("File is empty");
-        }
-
-        if (file.getSize() > fileStorageProperties.getMaxFileSize()) {
-            throw new InvalidFileException("File size exceeds maximum allowed size of " +
-                                         fileStorageProperties.getMaxFileSize() + " bytes");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !fileStorageProperties.getAllowedDocumentTypes().contains(contentType)) {
-            throw new InvalidFileException("File type not allowed: " + contentType);
-        }
-
-        logger.debug("File validation passed for: {}", file.getOriginalFilename());
+        return responses;
     }
 
     @Transactional

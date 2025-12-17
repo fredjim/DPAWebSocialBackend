@@ -2,7 +2,6 @@ package com.infsis.socialpagebackend.medias.controllers;
 
 import com.infsis.socialpagebackend.medias.dtos.DocumentFileDTO;
 import com.infsis.socialpagebackend.medias.services.DocumentStorageService;
-import com.infsis.socialpagebackend.validation.ValidDocumentFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -31,9 +31,8 @@ public class DocumentUploadController {
     @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public DocumentFileDTO handleFileUpload(@RequestParam("file") @ValidDocumentFile MultipartFile file) {
-        logger.info("Document upload request received: {}", file.getOriginalFilename());
-        return documentStorageService.storeFile(file);
+    public List<DocumentFileDTO> handleFileUpload(@RequestParam("file") List<MultipartFile> files) {
+        return documentStorageService.storeFile(files);
     }
 
     @GetMapping("/{documentUuid}/info")
