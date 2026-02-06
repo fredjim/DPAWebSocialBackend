@@ -490,3 +490,8 @@ insert into article_media (id, uuid, article_id, file_name, number, file_type, f
     (104, '5d9a4559-7c13-4db6-8ea3-8f32a3f5c8e2', '879ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-ptang', 1, 'image', 'http://localhost:9091/api/v1/images/posts/5d9a4559-7c13-4db6-8ea3-8f32a3f5c8e2'),
     (105, '8f6e9b4a-1d4d-4a4c-9c2a-3e7f8d5c6b1e', '888ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-ds', 1, 'image', 'http://localhost:9091/api/v1/images/posts/8f6e9b4a-1d4d-4a4c-9c2a-3e7f8d5c6b1e'),
     (106, '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', '896ib4e8-0856-4aad-b3aa-747e2dba76d9', 'personal-dri', 1, 'image', 'http://localhost:9091/api/v1/images/posts/1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed');
+
+insert into link (id, uuid, owner_uuid, owner_type, name, url) values
+    (1, '1dd6c41b-aa30-4dfc-94f6-dcba31033063', '916ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', U&'Gu\00EDa de tr\00E1mites', 'http://digital.ddc.dpa.umss.edu.bo/65d05fdded95d67bd38647382442c54d'),
+    (2, '1dd6c41b-aa30-4dfc-94f6-dcba31033064', '917ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', 'SITRA', 'http://tareas.umss.net'),
+    (3, '1dd6c41b-aa30-4dfc-94f6-dcba31033065', '918ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', 'Sistema GAIA', 'http://plataforma.dpa.umss.edu.bo/acceso/login.php');
