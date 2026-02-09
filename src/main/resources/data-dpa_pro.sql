@@ -495,3 +495,6 @@ insert into link (id, uuid, owner_uuid, owner_type, name, url) values
     (1, '1dd6c41b-aa30-4dfc-94f6-dcba31033063', '916ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', U&'Gu\00EDa de tr\00E1mites', 'http://digital.ddc.dpa.umss.edu.bo/65d05fdded95d67bd38647382442c54d'),
     (2, '1dd6c41b-aa30-4dfc-94f6-dcba31033064', '917ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', 'SITRA', 'http://tareas.umss.net'),
     (3, '1dd6c41b-aa30-4dfc-94f6-dcba31033065', '918ib4e8-0856-4aad-b3aa-747e2dba76d9', 'ARTICLE', 'Sistema GAIA', 'http://plataforma.dpa.umss.edu.bo/acceso/login.php');
+
+-- Actualizar la secuencia para que el próximo ID generado sea mayor que el máximo ID actual en la tabla "link"
+SELECT setval('link_id_seq', (SELECT MAX(id) FROM link));
