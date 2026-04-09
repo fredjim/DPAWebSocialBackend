@@ -8,8 +8,8 @@ insert into role(id_role, name) values
     (7, 'ADMIN_CUDIE');
 
 insert into users (id_user, uuid, name, last_name, email, phone, password, photo_cover_path, photo_profile_path) values
-    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Mguzman', 'Guzman', 'micael.guzman@dpa.umss.edu.bo', '71795251', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, 'http://dpa.umss.net/api/v1/images/users/af87625e-3075-41a5-901a-cf950330b237'),
-    (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'JCahuaya', 'Jhonny Cahuaya', 'jhonny.cahuaya@umss.edu.bo', '70755958', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, 'http://dpa.umss.net/api/v1/images/users/e867fa32-75b7-4c3c-8943-4a2808c10ac0'),
+    (100, 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'admin-com1', 'Admin 1', 'admin-com1@hum.umss.edu', '', '$2a$10$lwZguPYFKEiIZYyCW4piVuyHb6hn6MGW3r7DOKg40BhPO3We5cwGu', null, null),
+    (101, 'eab72365-d8c1-45df-9b48-274f64c65b86', 'admin-com2', 'Admin 2', 'admin-com2@hum.umss.edu', '', '$2a$10$g46noOikL88uT7pNfj4Q/OVOyBtgfh6yFqixUxd4lww3UZrLeIOly', null, null),
     (110, '9bae1fe0-2c56-4091-883d-15458e051500', 'Emely', 'Fernandez Soliz', 'admin-convenios@umss.edu', '69577142', '$2a$10$ElXlBz1WzNDhanqtCmszb.bub/iKGcNQgcbr31MQe9wjsiim7Q5zG', null, 'http://dpa.umss.net/api/v1/images/users/733b01ba-198e-42db-b9ca-d7ace9a7abad'),
     (111, '844b324d-2f5e-41c9-b726-0149eeb01157', 'Javier', 'Lopez Canedo', 'admin-proyectos@umss.edu', '71852821', '$2a$10$Gm0O/HK8qXeqa/XPvrm4/uAQj2.G3XdKOHg8XTxG4Gif1UYDPcbEa', null, 'http://dpa.umss.net/api/v1/images/users/06b8fbe5-9d91-422b-bd20-6d89d23e5608'),
     (112, '2e121a51-24b5-4aad-92c2-150997ec4266', 'Leonardo', 'Beltran Ramirez', 'admin-becas@umss.edu', '75891148', '$2a$10$vs8E1jwz6Z3BBitXHP.Y/uVQ0pNkqHhXf0oQCFH7Nf/rjccHL2lCO', null, 'http://dpa.umss.net/api/v1/images/users/b5de2b13-4720-41e7-87d2-d31abd590fac'),
@@ -44,13 +44,13 @@ insert into comment_config (id, uuid, name, configuration_type) values
 
 insert into institution (id, uuid, name, description, location, category, email, phone, url, logo_url, background_url) values
 	(10, '93j203b4-f63b-4c4a-be05-eae84cef0c0c',
-        unistr('Direcci\00F3n de Planificaci\00F3n Acad\00E9mica - DPA'),
-        unistr('Direcci\00F3n de Planificaci\00F3n Académica de la Universidad Mayor de San Sim\00F3n'),
-        U&'Av. Oquendo Prolongación Jordán, Edif: Multiacadémico Piso 3°, Cochabamba, Bolivia',
+        unistr('Comunicaci\00F3n Social - UMSS'),
+        unistr('Comunicaci\00F3n Social - Universidad Mayor de San Sim\00F3n'),
+        U&'Calle Sucre, acera este de plaza Sucre, Facultad de Humanidades y Ciencias de la Educación - UMSS, Cochabamba, Bolivia',
         U&'Sitio web de educaci\00F3n',
-        'dpa@umss.edu.bo',
-        '+591 4 4232970',
-        'dpa.umss.edu.bo',
+        'comunicacionsocial@umss.edu',
+        '(591 4) 4544102',
+        'comunicacionsocial@umss.edu',
         'http://dpa.umss.net/api/v1/images/inst-profile/f1309a27-93eb-4429-a096-d786f8d16f5c',
         'http://dpa.umss.net/api/v1/images/inst-cover/14bacba4-b962-40b5-9dd1-d5bf8e1e86f8');
 
