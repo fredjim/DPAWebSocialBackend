@@ -1,6 +1,7 @@
 package com.infsis.socialpagebackend.exceptions;
 
 import com.infsis.socialpagebackend.medias.exceptions.BadRequestException;
+import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
 import com.infsis.socialpagebackend.medias.exceptions.FileSizeExceededException;
 import com.infsis.socialpagebackend.medias.exceptions.MaxFilesExceededException;
 import com.infsis.socialpagebackend.medias.exceptions.UnsupportedFileTypeException;
@@ -134,6 +135,17 @@ public class ErrorHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(build(400, "BAD_REQUEST: "+ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ContentBlockedException.class)
+    public ResponseEntity<ErrorResponse> handleContentBlocked(
+            ContentBlockedException ex, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                422,
+                "Contenido bloqueado: " + ex.getModerationReason(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
     private ErrorResponse build(int status, String msg, String code) {

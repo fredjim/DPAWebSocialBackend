@@ -7,6 +7,8 @@ import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+
 @Component
 public class CommentMapper {
 
@@ -30,7 +32,12 @@ public class CommentMapper {
         comment.setContent(commentDTO.getContent());
         comment.setUser(user);
         comment.setPost(post);
-        comment.setComment_date(commentDTO.getDate());
+        // si el DTO no trae fecha, usar la fecha actual para evitar violación de NOT NULL
+        if (commentDTO.getDate() == null) {
+            comment.setComment_date(new Date());
+        } else {
+            comment.setComment_date(commentDTO.getDate());
+        }
         comment.setState(CommentState.VISIBLE.name());
         comment.setModerated(commentDTO.isModerated());
         return comment;

@@ -4,6 +4,10 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.comments.repositories.CommentRepository;
+import com.infsis.socialpagebackend.moderation.dtos.ModerationResponse;
+import com.infsis.socialpagebackend.moderation.enums.ContentType;
+import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
+import com.infsis.socialpagebackend.moderation.services.ModerationPipeline;
 import com.infsis.socialpagebackend.posts.dtos.ReactionCounterDTO;
 import com.infsis.socialpagebackend.posts.dtos.ReactionItemDTO;
 import com.infsis.socialpagebackend.reactions.models.EmojiType;
@@ -45,6 +49,9 @@ public class ReplyService {
     @Autowired
     private ReplyReactionRepository replyReactionRepository;
 
+    @Autowired
+    private ModerationPipeline moderationPipeline;
+
     public List<ReplyDTO> getRepliesByCommentUuid(String commentUuid) {
         List<Reply> replies = replyRepository.findByCommentUuid(commentUuid);
         
@@ -84,27 +91,38 @@ public class ReplyService {
         if (comment == null) {
             throw new IllegalArgumentException("Comment not found");
         }
-    
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado con email: ", email));
-    
+
+        // ── Moderación automática ────────────────────────────────────────────
+        ModerationResponse modResult = moderationPipeline.moderate(replyRequest.getContent());
+
+        if (modResult.isRejected() || modResult.isNeedsReview()) {
+            throw new ContentBlockedException(modResult.getReason());
+        }
+
+        // ── Guardar reply ────────────────────────────────────────────────────
         Reply reply = new Reply();
         reply.setComment(comment);
         reply.setContent(replyRequest.getContent());
         reply.setUser(user);
-    
-     // Si hay `parentReplyUuid`, se asocia a una respuesta existente
-if (replyRequest.getParentReplyUuid() != null) {
-    Reply parentReply = replyRepository.findByUuid(replyRequest.getParentReplyUuid());
-    if (parentReply == null) {
-        throw new NotFoundException("Parent reply not found with uuid: " , replyRequest.getParentReplyUuid());
-    }
-    reply.setParentReply(parentReply);  // 🔥 Aquí asignamos correctamente el padre
-}
+
+        if (replyRequest.getParentReplyUuid() != null) {
+            Reply parentReply = replyRepository.findByUuid(replyRequest.getParentReplyUuid());
+            if (parentReply == null) {
+                throw new NotFoundException("Parent reply not found with uuid: ", replyRequest.getParentReplyUuid());
+            }
+            reply.setParentReply(parentReply);
+        }
 
         reply = replyRepository.save(reply);
+
+        // ── Guardar auditoría de moderación ──────────────────────────────────
+        moderationPipeline.saveResult(modResult, reply.getUuid(), ContentType.REPLY);
+
         return convertToDTO(reply);
     }
     

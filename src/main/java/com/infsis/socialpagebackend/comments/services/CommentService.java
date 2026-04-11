@@ -5,13 +5,16 @@ import com.infsis.socialpagebackend.comments.mappers.CommentMapper;
 import com.infsis.socialpagebackend.enums.*;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.comments.models.Comment;
-import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.posts.repositories.CommentConfigRepository;
 import com.infsis.socialpagebackend.comments.repositories.CommentRepository;
 import com.infsis.socialpagebackend.posts.repositories.PostRepository;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
+import com.infsis.socialpagebackend.moderation.dtos.ModerationResponse;
+import com.infsis.socialpagebackend.moderation.enums.ContentType;
+import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
+import com.infsis.socialpagebackend.moderation.services.ModerationPipeline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,22 +41,38 @@ public class CommentService {
     @Autowired
     private CommentConfigRepository commentConfigRepository;
 
+    @Autowired
+    private ModerationPipeline moderationPipeline;
+
     public CommentDTO saveComment(String postUuid, CommentDTO commentDTO) {
 
         Users user = getCurrentUser();
-
         Post post = postRepository.findOneByUuid(postUuid);
-
         String commentConfig = post.getComment_conf().getConfiguration_type();
 
+        // ── Moderación automática ────────────────────────────────────────────
+        ModerationResponse modResult = moderationPipeline.moderate(commentDTO.getContent());
+
+        if (modResult.isRejected()) {
+            throw new ContentBlockedException(modResult.getReason());
+        }
+
+        // ── Determinar estado del comentario ─────────────────────────────────
         Comment comment = commentMapper.getComment(commentDTO, user, post);
 
-        if (commentConfig.equals(PostCommentConfigState.MODERATED_COMMENTS.name())) {
+        boolean requiresManualReview = modResult.isNeedsReview();
+
+        if (requiresManualReview) {
             comment.setModerated(true);
             comment.setState(CommentState.PENDING_APPROVAL.name());
         }
+        // Si no requiere revisión, el estado ya viene como VISIBLE desde el mapper
 
         comment = commentRepository.save(comment);
+
+        // ── Guardar auditoría de moderación ──────────────────────────────────
+        moderationPipeline.saveResult(modResult, comment.getUuid(), ContentType.COMMENT);
+
         return commentMapper.toDTO(comment);
     }
 

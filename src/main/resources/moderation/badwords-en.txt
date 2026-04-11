@@ -1,0 +1,61 @@
+# =============================================================================
+# Bad words list - English
+# Format: one word or phrase per line
+# Lines starting with # are comments
+# Categories: PROFANITY | HATE_SPEECH | SPAM
+# =============================================================================
+
+# PROFANITY
+fuck
+shit
+bitch
+asshole
+bastard
+cunt
+dick
+pussy
+cock
+motherfucker
+fucker
+bullshit
+damn
+ass
+piss
+prick
+jackass
+dumbass
+wanker
+jerk off
+
+# HATE_SPEECH
+nigger
+nigga
+faggot
+fag
+dyke
+tranny
+kike
+spic
+wetback
+chink
+cracker (slur)
+gook
+beaner
+towelhead
+raghead
+whitey (slur)
+retard
+moron (slur)
+
+# SPAM
+click here now
+make money fast
+work from home now
+free offer limited
+buy now and win
+exclusive deal today
+invest and earn
+multiply your money
+get rich quick
+limited time offer
+earn money online fast
