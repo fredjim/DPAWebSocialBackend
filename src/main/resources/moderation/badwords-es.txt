@@ -1,0 +1,88 @@
+# =============================================================================
+# Lista de palabras prohibidas - Español (Latinoamérica / Perú)
+# Formato: una palabra o frase por línea
+# Líneas que comienzan con # son comentarios
+# Categorías: PROFANITY | HATE_SPEECH | SPAM
+# =============================================================================
+
+# PROFANITY
+puta
+puto
+mierda
+coño
+carajo
+pendejo
+pendeja
+imbécil
+imbecil
+idiota
+culo
+perra
+verga
+concha
+huevon
+huevón
+conchatumadre
+conchatumare
+culero
+cabrón
+cabron
+polla
+cojón
+cojon
+chucha
+chuchamadre
+chuchatumadre
+mamahuevo
+marica
+pajero
+pajera
+pito
+hdp
+hdlp
+oe puta
+weon
+weón
+ctm
+
+# HATE_SPEECH
+maricón
+maricon
+travelo
+trolo
+gay (insulto)
+negro (insulto)
+cholo (insulto)
+indio (insulto)
+serrano (insulto)
+mongoloide
+retrasado
+retardado
+anormal
+subnormal
+bastardo
+bastarda
+escoria
+maldito
+maldita
+desgraciado
+desgraciada
+asqueroso
+asquerosa
+
+# SPAM
+gana dinero rapido
+gana dinero rápido
+trabaja desde casa
+haz clic aqui
+haz clic aquí
+gana soles facil
+oferta exclusiva
+precio especial limitado
+compra ahora y gana
+descuento increible
+descuento increíble
+oferta por tiempo limitado
+negocio rentable
+invierte y gana
+multiplica tu dinero
