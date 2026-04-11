@@ -57,7 +57,8 @@ public class Comment {
     private Date createdDate;
 
     @LastModifiedDate
-    @Column(updatable = false)
+    // allow updates for lastModifiedDate so auditing works
+    @Column
     private Date lastModifiedDate;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -65,7 +66,22 @@ public class Comment {
 
     @PrePersist
     public void initializeUuid() {
-        this.uuid = UUID.randomUUID().toString();
+        if (this.uuid == null) {
+            this.uuid = UUID.randomUUID().toString();
+        }
+        Date now = new Date();
+        if (this.comment_date == null) {
+            this.comment_date = now;
+        }
+        if (this.createdDate == null) {
+            this.createdDate = now;
+        }
+        this.lastModifiedDate = now;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.lastModifiedDate = new Date();
     }
 
 }
