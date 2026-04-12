@@ -49,6 +49,10 @@ dependencies {
 
 	// Apache Commons Lang3: StringUtils.stripAccents para normalización de texto
 	implementation 'org.apache.commons:commons-lang3:3.14.0'
+
+	// Flyway: migraciones de base de datos
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-database-postgresql'
 }
 
 tasks.named('test') {
