@@ -48,14 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtGenerador.obtenerUsernameDeJwt(token);
             UserDetails userDetails = customUsersDetailsService.loadUserByUsername(username);
 
-            // Usar los permisos ya cargados en userDetails
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-            // Imprimir permisos del usuario
-            userDetails.getAuthorities().forEach(auth -> System.out.println("Permiso: " + auth.getAuthority()));
         }
         chain.doFilter(request, response);
     }

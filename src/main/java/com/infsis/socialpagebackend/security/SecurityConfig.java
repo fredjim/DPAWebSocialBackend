@@ -30,6 +30,9 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Autowired
+    private TenantResolutionFilter tenantResolutionFilter;
+
+    @Autowired
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
@@ -78,6 +81,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(customCorsConfiguration))
                 .httpBasic(withDefaults());
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(tenantResolutionFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
