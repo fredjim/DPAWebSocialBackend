@@ -1,6 +1,6 @@
 package com.infsis.socialpagebackend.medias.services;
 
-import com.infsis.socialpagebackend.configuration.ServerProperties;
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.constants.ImageContentTypes;
 import com.infsis.socialpagebackend.medias.dtos.ImageFileDTO;
 import com.infsis.socialpagebackend.medias.mappers.ImageFileMapper;
@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +38,7 @@ public class ImageStorageService {
     private ImageFileMapper imageFileMapper;
 
     @Autowired
-    private ServerProperties serverProperties;
+    private AppUrlProperties appUrlProperties;
 
     @Autowired
     private MediaRepository mediaRepository;
@@ -57,17 +56,14 @@ public class ImageStorageService {
             File uploadedFile = new File(directory + uniqueFileName);
             image.transferTo(uploadedFile);
 
-            String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path(imagesPath)
-                    .path(uniqueFileName)
-                    .toUriString();
+            String relativePath = imagesPath + uniqueFileName;
 
             ImageFile imageFile = new ImageFile();
             imageFile.setUuid(uniqueFileName);
             imageFile.setName(image.getOriginalFilename());
             imageFile.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
             imageFile.setType(image.getContentType());
-            imageFile.setUrl_resource(downloadUrl);
+            imageFile.setUrl_resource(relativePath);
 
             imageFileRepository.save(imageFile);
             imageFileDTOList.add(imageFileMapper.toDTO(imageFile));

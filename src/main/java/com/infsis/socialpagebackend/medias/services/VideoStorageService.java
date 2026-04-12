@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.medias.services;
 
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.enums.*;
 import com.infsis.socialpagebackend.medias.dtos.VideoFileDTO;
 import com.infsis.socialpagebackend.medias.mappers.VideoFileMapper;
@@ -19,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +38,9 @@ public class VideoStorageService {
     private VideoFileMapper videoFileMapper;
 
     @Autowired
+    private AppUrlProperties appUrlProperties;
+
+    @Autowired
     private MediaRepository mediaRepository;
 
     public List<VideoFileDTO> storeVideos(List<MultipartFile> videos, String directory, String path) throws IOException {
@@ -48,20 +51,17 @@ public class VideoStorageService {
             File uploadedFile = new File(directory + uuid);
             video.transferTo(uploadedFile);
 
-            String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path(path)
-                    .path(uuid)
-                    .toUriString();
-            VideoFileDTO videoFileDTO = new VideoFileDTO();
-            videoFileDTO.setUuid(uuid);
-            videoFileDTO.setName(video.getOriginalFilename());
-            videoFileDTO.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
-            videoFileDTO.setType(video.getContentType());
-            videoFileDTO.setUrlResource(downloadUrl);
+            String relativePath = path + uuid;
 
-            VideoFile videoFile = videoFileMapper.getFile(videoFileDTO);
+            VideoFile videoFile = new VideoFile();
+            videoFile.setUuid(uuid);
+            videoFile.setName(video.getOriginalFilename());
+            videoFile.setStatus(FileStatus.SAVED_SUCCESSFULLY.name());
+            videoFile.setType(video.getContentType());
+            videoFile.setUrl_resource(relativePath);
+
             videoFileRepository.save(videoFile);
-            videoFileDTOS.add(videoFileDTO);
+            videoFileDTOS.add(videoFileMapper.toDTO(videoFile));
 
 
         }

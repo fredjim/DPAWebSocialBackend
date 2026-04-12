@@ -5,10 +5,12 @@ import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.comments.dtos.CommentCounterDTO;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.comments.repositories.CommentRepository;
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.enums.CommentState;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.posts.clients.FacebookApiClient;
 import com.infsis.socialpagebackend.posts.dtos.*;
 import com.infsis.socialpagebackend.posts.mappers.MediaMapper;
@@ -51,6 +53,9 @@ public class PostService {
 
     @Autowired
     private MediaMapper mediaMapper;
+
+    @Autowired
+    private AppUrlProperties appUrlProperties;
 
     @Autowired
     private MediaRepository mediaRepository;
@@ -99,27 +104,28 @@ public class PostService {
     }
 
     public List<PostDTO> getAllPost() {
+        String tenantId = TenantContext.getCurrentTenant();
         return postRepository
-                .findAll()
+                .findAllByInstitutionUuid(tenantId)
                 .stream()
-                .filter(post -> !post.isDeleted())
                 .map(post -> postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid())))
                 .collect(Collectors.toList());
     }
 
     public List<PostDTO> getAllByGroup(String groupUuid) {
-
+        String tenantId = TenantContext.getCurrentTenant();
         return postRepository
-                .findAll()
+                .findAllByInstitutionUuid(tenantId)
                 .stream()
-                .filter(post -> isFromGroup(groupUuid, post) && !post.isDeleted())
+                .filter(post -> isFromGroup(groupUuid, post))
                 .map(post -> postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid())))
                 .collect(Collectors.toList());
     }
 
     public List<PostDTO> getPostsByType(String postType) {
+        String tenantId = TenantContext.getCurrentTenant();
         return postRepository
-                .findAll()
+                .findAllByInstitutionUuid(tenantId)
                 .stream()
                 .filter(post -> post.getPost_type().equals(postType))
                 .map(post -> postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid())))
@@ -362,11 +368,9 @@ public class PostService {
 
     /* Método para buscar publicaciones por texto  */
     public List<PostDTO> searchPosts(String text) {
-        // Buscar publicaciones por texto en el repositorio
-        List<Post> posts = postRepository.searchPostsByText(text);
-
-        // Convertir las publicaciones encontradas a una lista de DTOs
-        return posts.stream()
+        String tenantId = TenantContext.getCurrentTenant();
+        return postRepository.searchPostsByTextAndTenant(text, tenantId)
+                .stream()
                 .map(post -> postMapper.toDTO(post))
                 .collect(Collectors.toList());
     }
@@ -427,7 +431,7 @@ public class PostService {
                     if (type.equalsIgnoreCase(media.getFile_type())) {
                         MediaItemDTO mediaItemDTO = new MediaItemDTO();
                         mediaItemDTO.setUuid_post(post.getUuid());
-                        mediaItemDTO.setPath(media.getFile_path());
+                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getFile_path()));
                         mediaItems.add(mediaItemDTO);
                     }
                 }
@@ -437,9 +441,10 @@ public class PostService {
     }
 
     public List<PostDTO> getPagedPosts(int page, int size) {
+        String tenantId = TenantContext.getCurrentTenant();
         Pageable pageable = PageRequest.of(page, size, Sort.by("post_date").descending());
-        Page<Post> posts = postRepository.findAllPaged(pageable);
-    
+        Page<Post> posts = postRepository.findAllPagedByTenant(tenantId, pageable);
+
         return posts.stream()
                     .map(post -> postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid())))
                     .collect(Collectors.toList());

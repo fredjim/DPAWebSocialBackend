@@ -162,13 +162,13 @@ public class DocumentStorageService {
                     uniqueFileName
             );
 
-            // Build download URL using configuration
-            String downloadUrl = appUrlProperties.buildDocumentUrl(uniqueFileName);
+            // Relative path stored in DB — domain-agnostic
+            String relativePath = appUrlProperties.getApi().getFullDocumentsPath() + "/" + uniqueFileName;
 
-            // Create DTO using helper method
-            DocumentFileDTO documentFileDTO = createDocumentFileDTO(file, uniqueFileName, downloadUrl);
+            // Create DTO using helper method (stores relative path; mapper will build full URL on read)
+            DocumentFileDTO documentFileDTO = createDocumentFileDTO(file, uniqueFileName, relativePath);
 
-            // Save to database
+            // Save to database (url_resource = relative path)
             documentFileRepository.save(documentFileMapper.getFile(documentFileDTO));
 
             logger.info("File uploaded successfully: {} (size: {} bytes)", uniqueFileName, file.getSize());

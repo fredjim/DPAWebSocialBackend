@@ -2,11 +2,15 @@ package com.infsis.socialpagebackend.authentication.mappers;
 
 import com.infsis.socialpagebackend.authentication.dtos.UserDetailDTO;
 import com.infsis.socialpagebackend.authentication.models.Users;
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
 
+    @Autowired
+    private AppUrlProperties appUrlProperties;
 
     public UserDetailDTO toDTO(Users user) {
         UserDetailDTO userDetailDTO = new UserDetailDTO();
@@ -17,8 +21,8 @@ public class UserMapper {
         userDetailDTO.setEmail(user.getEmail());
         userDetailDTO.setPassword(user.getPassword());
         userDetailDTO.setPhone(user.getPhone());
-        userDetailDTO.setPhoto_profile_path(user.getPhoto_profile_path());
-        userDetailDTO.setPhoto_cover_path(user.getPhoto_cover_path());
+        userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhoto_profile_path()));
+        userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhoto_cover_path()));
 
         return userDetailDTO;
     }
@@ -35,5 +39,12 @@ public class UserMapper {
         user.setPhoto_cover_path(userDetailDTO.getPhoto_cover_path());
 
         return user;
+    }
+
+    private String buildUrlIfPresent(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        return appUrlProperties.buildResourceUrl(path);
     }
 }
