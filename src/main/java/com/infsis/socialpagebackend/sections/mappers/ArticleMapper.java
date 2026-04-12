@@ -1,9 +1,10 @@
 package com.infsis.socialpagebackend.sections.mappers;
 
 import com.infsis.socialpagebackend.authentication.models.Users;
+import com.infsis.socialpagebackend.posts.mappers.MediaMapper;
+import com.infsis.socialpagebackend.posts.models.Media;
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.sections.models.Article;
-import com.infsis.socialpagebackend.sections.models.ArticleMedia;
 import com.infsis.socialpagebackend.sections.models.Section;
 import com.infsis.socialpagebackend.enums.OwnerType;
 import com.infsis.socialpagebackend.sections.repositories.LinkRepository;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 public class ArticleMapper {
 
     @Autowired
-    private ArticleMediaMapper articleMediaMapper;
+    private MediaMapper mediaMapper;
 
     @Autowired
     private LinkMapper linkMapper;
@@ -36,18 +37,17 @@ public class ArticleMapper {
         articleDTO.setUser_id(article.getUsers().getUuid());
         articleDTO.setSection_id(article.getSection().getUuid());
         articleDTO.setMedias(
-                        article.getArticle_medias()
-                                .stream()
-                                .map(media -> articleMediaMapper.toDTO(media))
-                                .collect(Collectors.toList())
+                article.getArticle_medias()
+                        .stream()
+                        .map(media -> mediaMapper.toDTO(media))
+                        .collect(Collectors.toList())
         );
 
-        // mapear enlaces si existen: cargarlos desde LinkRepository
-        List<com.infsis.socialpagebackend.sections.models.Link> links = linkRepository.findAllByOwnerTypeAndOwnerUuidAndDeletedFalse(OwnerType.ARTICLE, article.getUuid());
+        List<com.infsis.socialpagebackend.sections.models.Link> links =
+                linkRepository.findAllByOwnerTypeAndOwnerUuidAndDeletedFalse(OwnerType.ARTICLE, article.getUuid());
         if (links != null) {
             articleDTO.setLinks(
-                    links
-                            .stream()
+                    links.stream()
                             .map(link -> linkMapper.toDTO(link))
                             .collect(Collectors.toList())
             );
@@ -69,7 +69,7 @@ public class ArticleMapper {
         return article;
     }
 
-    public Article getArticle(ArticleDTO articleDTO, List<ArticleMedia> medias, Section section, Users user) {
+    public Article getArticle(ArticleDTO articleDTO, List<Media> medias, Section section, Users user) {
 
         Article article = new Article();
 
@@ -82,5 +82,4 @@ public class ArticleMapper {
 
         return article;
     }
-
 }

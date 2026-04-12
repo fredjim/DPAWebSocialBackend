@@ -1,6 +1,7 @@
 package com.infsis.socialpagebackend.sections.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.infsis.socialpagebackend.posts.dtos.MediaDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,7 +31,7 @@ public class ArticleDTO {
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private Date date;
 
-    private List<ArticleMediaDTO> medias;
+    private List<MediaDTO> medias;
 
     private List<LinkDTO> links;
 }

@@ -2,6 +2,7 @@ package com.infsis.socialpagebackend.sections.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.infsis.socialpagebackend.authentication.models.Users;
+import com.infsis.socialpagebackend.posts.models.Media;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,7 +54,7 @@ public class Article {
     private Date date;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE)
-    private List<ArticleMedia> article_medias;
+    private List<Media> article_medias;
 
     // Enlaces asociados al artículo
     // @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,6 +70,9 @@ public class Article {
 
     @Column(nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT '0'")
     private boolean deleted;
+
+    @Column(length = 36)
+    private String institutionId;
 
     @PrePersist
     public void initializeUuid() {
