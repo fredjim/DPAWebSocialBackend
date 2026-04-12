@@ -1,7 +1,8 @@
 package com.infsis.socialpagebackend.medias.controllers;
 
-import com.infsis.socialpagebackend.medias.dtos.DocumentFileDTO;
-import com.infsis.socialpagebackend.medias.services.DocumentStorageService;
+import com.infsis.socialpagebackend.enums.FileCategory;
+import com.infsis.socialpagebackend.medias.dtos.UploadedFileDTO;
+import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,44 +26,45 @@ public class DocumentUploadController {
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentUploadController.class);
 
+    private static final String DOCUMENTS_DIRECTORY = System.getProperty("user.dir") + "/storage/institution/posts/documents/";
+    private static final String DOCUMENTS_PATH      = "/api/v1/documents/";
+
     @Autowired
-    private DocumentStorageService documentStorageService;
+    private FileStorageService fileStorageService;
 
     @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/articles")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<DocumentFileDTO> handleFileUploadDocs(@RequestParam(name = "files", required = true) List<MultipartFile> files) {
-        return documentStorageService.storeFiles(files);
+    public List<UploadedFileDTO> handleFileUploadDocs(
+            @RequestParam(name = "files") List<MultipartFile> files) {
+        return fileStorageService.storeFiles(files, FileCategory.DOCUMENT, DOCUMENTS_DIRECTORY, DOCUMENTS_PATH);
     }
 
     @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public DocumentFileDTO handleFileUpload(@RequestParam(name = "file", required = true) MultipartFile file) {
-        return documentStorageService.storeFile(file);
+    public UploadedFileDTO handleFileUpload(
+            @RequestParam(name = "file") MultipartFile file) {
+        return fileStorageService.storeFile(file, FileCategory.DOCUMENT, DOCUMENTS_DIRECTORY, DOCUMENTS_PATH);
     }
 
     @GetMapping("/{documentUuid}/info")
-    public DocumentFileDTO getDocumentInfo(@PathVariable String documentUuid) {
+    public UploadedFileDTO getDocumentInfo(@PathVariable String documentUuid) {
         logger.info("Document info request for UUID: {}", documentUuid);
-        return documentStorageService.getDocument(documentUuid);
+        return fileStorageService.getFileInfo(documentUuid);
     }
 
     @GetMapping("/{documentUuid}")
     public ResponseEntity<Resource> getResourceDocument(@PathVariable String documentUuid) throws IOException {
         logger.info("Document download request for UUID: {}", documentUuid);
 
-        Resource resource = documentStorageService.getDocumentResource(documentUuid);
-        String contentType = documentStorageService.getDocumentContentType(documentUuid);
-
-        // Get document info for additional headers
-        DocumentFileDTO documentInfo = documentStorageService.getDocument(documentUuid);
+        UploadedFileDTO info = fileStorageService.getFileInfo(documentUuid);
+        Resource resource = fileStorageService.loadAsResource(documentUuid, DOCUMENTS_DIRECTORY);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                       "inline; filename=\"" + documentInfo.getName() + "\"")
-                .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000") // 1 year cache
+                .contentType(MediaType.parseMediaType(info.getMimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + info.getName() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000")
                 .body(resource);
     }
 
@@ -71,6 +73,6 @@ public class DocumentUploadController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDocument(@PathVariable String documentUuid) {
         logger.info("Document deletion request for UUID: {}", documentUuid);
-        documentStorageService.deleteDocument(documentUuid);
+        fileStorageService.deleteFile(documentUuid, DOCUMENTS_DIRECTORY);
     }
 }
