@@ -1,11 +1,11 @@
 package com.infsis.socialpagebackend.institutions.services;
 
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.mappers.InstitutionMapper;
 import com.infsis.socialpagebackend.posts.dtos.MediaItemDTO;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
-import com.infsis.socialpagebackend.medias.services.ImageStorageService;
 import com.infsis.socialpagebackend.posts.models.Media;
 import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
@@ -37,7 +37,7 @@ public class InstitutionService {
     private InstitutionMapper institutionMapper;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AppUrlProperties appUrlProperties;
 
     public InstitutionDTO getInstitution(String institutionUuid) {
         Institution institution = institutionRepository.findOneByUuid(institutionUuid);
@@ -138,10 +138,10 @@ public class InstitutionService {
         for (Post post : posts) {
             if (post.getInstitution().getUuid().equals(institutionUuid)) {
                 for (Media media : post.getContent().getMedia()) {
-                    if (type.equalsIgnoreCase(media.getFile_type())) {
+                    if (type.equalsIgnoreCase(media.getFile_type()) && media.getUploadedFile() != null) {
                         MediaItemDTO mediaItemDTO = new MediaItemDTO();
                         mediaItemDTO.setUuid_post(post.getUuid());
-                        mediaItemDTO.setPath(media.getFile_path());
+                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getUploadedFile().getUrlResource()));
                         mediaItems.add(mediaItemDTO);
                     }
                 }
