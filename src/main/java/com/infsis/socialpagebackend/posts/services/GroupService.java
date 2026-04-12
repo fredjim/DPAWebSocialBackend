@@ -5,6 +5,7 @@ import com.infsis.socialpagebackend.posts.mappers.GroupMapper;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.posts.models.Group;
 import com.infsis.socialpagebackend.posts.repositories.GroupRepository;
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,8 +35,9 @@ public class GroupService {
     }
 
     public List<GroupDTO> getAllGroups() {
+        String tenantId = TenantContext.getCurrentTenant();
         return groupRepository
-                .findAll()
+                .findAllByInstitutionId(tenantId)
                 .stream()
                 .map(group -> groupMapper.toDTO(group))
                 .collect(Collectors.toList());

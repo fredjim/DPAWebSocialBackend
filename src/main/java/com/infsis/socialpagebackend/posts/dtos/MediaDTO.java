@@ -1,29 +1,24 @@
 package com.infsis.socialpagebackend.posts.dtos;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class MediaDTO {
 
+    private String uuid;
+
     @NotNull
     private Integer number;
 
-    @NotBlank
-    @Size(min = 3, max = 10)
     private String type;
 
-    @Size(min = 3, max = 100)
     private String name;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
+    private String uploaded_file_uuid;
+
     private String path;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
     private String fb_media_id;
 
 }

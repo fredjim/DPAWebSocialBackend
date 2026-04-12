@@ -14,13 +14,15 @@ import org.springframework.data.domain.Pageable;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-    @Query("SELECT p FROM Post p WHERE LOWER(p.content.text.text) LIKE LOWER(CONCAT('%', :text, '%')) ORDER BY p.createdDate DESC")
-    List<Post> searchPostsByText(@Param("text") String text);    
-
     @Query("SELECT p FROM Post p WHERE p.uuid = ?1")
     Post findOneByUuid(String Uuid);
-  
-  
-    @Query("SELECT p FROM Post p WHERE p.deleted = false ORDER BY p.post_date DESC")
-    Page<Post> findAllPaged(Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.institution.uuid = :tenantId AND p.deleted = false ORDER BY p.post_date DESC")
+    List<Post> findAllByInstitutionUuid(@Param("tenantId") String tenantId);
+
+    @Query("SELECT p FROM Post p WHERE p.institution.uuid = :tenantId AND p.deleted = false ORDER BY p.post_date DESC")
+    Page<Post> findAllPagedByTenant(@Param("tenantId") String tenantId, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.institution.uuid = :tenantId AND LOWER(p.content.text.text) LIKE LOWER(CONCAT('%', :text, '%')) ORDER BY p.createdDate DESC")
+    List<Post> searchPostsByTextAndTenant(@Param("text") String text, @Param("tenantId") String tenantId);
 }

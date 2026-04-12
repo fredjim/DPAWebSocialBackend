@@ -428,10 +428,10 @@ public class PostService {
         for (Post post : posts) {
             if (post.getInstitution().getUuid().equals(institutionUuid)) {
                 for (Media media : post.getContent().getMedia()) {
-                    if (type.equalsIgnoreCase(media.getFile_type())) {
+                    if (type.equalsIgnoreCase(media.getFile_type()) && media.getUploadedFile() != null) {
                         MediaItemDTO mediaItemDTO = new MediaItemDTO();
                         mediaItemDTO.setUuid_post(post.getUuid());
-                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getFile_path()));
+                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getUploadedFile().getUrlResource()));
                         mediaItems.add(mediaItemDTO);
                     }
                 }

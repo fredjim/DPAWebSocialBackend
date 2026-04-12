@@ -24,6 +24,9 @@ public class Group {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(length = 36)
+    private String institutionId;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL },
             mappedBy = "groups")
     private List<Post> posts = new ArrayList<>();
@@ -61,6 +64,14 @@ public class Group {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(String institutionId) {
+        this.institutionId = institutionId;
     }
 
     public List<Post> getPosts() {
