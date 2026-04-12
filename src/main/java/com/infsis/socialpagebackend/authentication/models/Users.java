@@ -47,7 +47,13 @@ public class Users {
 
     @Column(length = 100)
     private String photo_cover_path;
-  
+
+    @Column(length = 36)
+    private String institutionId;
+
+    @Column(nullable = false)
+    private boolean isRoot = false;
+
     public String getUuid() {
         return uuid;
     }

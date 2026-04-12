@@ -3,6 +3,7 @@ package com.infsis.socialpagebackend.comments.repositories;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,10 +12,11 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     Comment findByUuid(String uuid);
 
-    @Query("SELECT pr FROM Comment pr WHERE pr.post.uuid = ?1")
+    @Query("SELECT c FROM Comment c WHERE c.post.uuid = ?1")
     List<Comment> findByPostId(String postUuid);
 
-    @Query("SELECT COUNT(*) FROM Comment WHERE state=?1")
-    long countByModerated(String state);
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.institutionId = :tenantId AND c.state = :state")
+    long countByTenantAndState(@Param("tenantId") String tenantId, @Param("state") String state);
 
+    List<Comment> findAllByInstitutionIdAndState(String institutionId, String state);
 }
