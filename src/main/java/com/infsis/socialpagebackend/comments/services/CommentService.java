@@ -15,6 +15,7 @@ import com.infsis.socialpagebackend.moderation.dtos.ModerationResponse;
 import com.infsis.socialpagebackend.moderation.enums.ContentType;
 import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
 import com.infsis.socialpagebackend.moderation.services.ModerationPipeline;
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -123,37 +124,26 @@ public class CommentService {
     }
 
     public List<CommentDTO> getAllPendingModeratedComments() {
-        Users users = getCurrentUser();
-
-        List<Comment> comments = commentRepository.findAll();
-
-        return comments
+        String tenantId = TenantContext.getCurrentTenant();
+        return commentRepository
+                .findAllByInstitutionIdAndState(tenantId, CommentState.PENDING_APPROVAL.name())
                 .stream()
-                .filter(comment -> comment.getState().equals(CommentState.PENDING_APPROVAL.name()))
-                .map(comment -> {
-                    CommentDTO commentDTO = commentMapper.toDTO(comment);
-                    return commentDTO;
-                })
+                .map(commentMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public List<CommentDTO> getAllRejectedModeratedComments() {
-        Users users = getCurrentUser();
-
-        List<Comment> comments = commentRepository.findAll();
-
-        return comments
+        String tenantId = TenantContext.getCurrentTenant();
+        return commentRepository
+                .findAllByInstitutionIdAndState(tenantId, CommentState.REJECTED.name())
                 .stream()
-                .filter(comment -> comment.getState().equals(CommentState.REJECTED.name()))
-                .map(comment -> {
-                    CommentDTO commentDTO = commentMapper.toDTO(comment);
-                    return commentDTO;
-                })
+                .map(commentMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public long countModeratedComments() {
-        return commentRepository.countByModerated(CommentState.PENDING_APPROVAL.name());
+        String tenantId = TenantContext.getCurrentTenant();
+        return commentRepository.countByTenantAndState(tenantId, CommentState.PENDING_APPROVAL.name());
     }
 
     public CommentDTO approvePendingModeratedComment(CommentDTO commentDTO) {
@@ -189,17 +179,11 @@ public class CommentService {
         return commentMapper.toDTO(currentComment);
     }
     public List<CommentDTO> getAllDeletedModeratedComments() {
-        Users users = getCurrentUser();
-
-        List<Comment> comments = commentRepository.findAll();
-
-        return comments
+        String tenantId = TenantContext.getCurrentTenant();
+        return commentRepository
+                .findAllByInstitutionIdAndState(tenantId, CommentState.REMOVED.name())
                 .stream()
-                .filter(comment -> comment.getState().equals(CommentState.REMOVED.name()))
-                .map(comment -> {
-                    CommentDTO commentDTO = commentMapper.toDTO(comment);
-                    return commentDTO;
-                })
+                .map(commentMapper::toDTO)
                 .collect(Collectors.toList());
     }
 }

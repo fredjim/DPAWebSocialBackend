@@ -4,6 +4,8 @@ import com.infsis.socialpagebackend.institutions.models.Institution;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface InstitutionRepository extends JpaRepository<Institution, Integer> {
 
     @Query("SELECT i FROM Institution i WHERE i.uuid = ?1")
@@ -11,4 +13,7 @@ public interface InstitutionRepository extends JpaRepository<Institution, Intege
 
     @Query("SELECT i FROM Institution i WHERE i.id = ?1")
     Institution findOneById(Integer id);
+
+    @Query("SELECT i FROM Institution i WHERE i.slug = ?1 AND i.deleted = false")
+    Optional<Institution> findBySlug(String slug);
 }

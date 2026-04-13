@@ -69,12 +69,18 @@ public class JwtGenerator {
 
     // Métodos privados para modularizar
 
+    public String extractInstitutionId(String token) {
+        return extractClaims(token).get("institutionId", String.class);
+    }
+
     private String generarToken(Users user, long expirationTime) {
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("userId", user.getUuid())
                 .claim("roles", extractRoleNames(user))
                 .claim("name", user.getName())
+                .claim("institutionId", user.getInstitutionId())
+                .claim("isRoot", user.isRoot())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(SignatureAlgorithm.HS512, ConstantsSecurity.JWT_FIRMA)

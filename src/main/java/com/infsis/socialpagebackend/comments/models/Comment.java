@@ -52,6 +52,9 @@ public class Comment {
     @Column(nullable = false)
     private String state;
 
+    @Column(length = 36)
+    private String institutionId;
+
     @CreatedDate
     @Column(updatable = false)
     private Date createdDate;

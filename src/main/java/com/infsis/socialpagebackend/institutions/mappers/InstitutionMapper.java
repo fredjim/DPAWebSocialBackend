@@ -1,11 +1,16 @@
 package com.infsis.socialpagebackend.institutions.mappers;
 
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.models.Institution;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InstitutionMapper {
+
+    @Autowired
+    private AppUrlProperties appUrlProperties;
 
     public InstitutionDTO toDTO(Institution institution) {
         InstitutionDTO institutionDTO = new InstitutionDTO();
@@ -17,8 +22,8 @@ public class InstitutionMapper {
         institutionDTO.setEmail(institution.getEmail());
         institutionDTO.setPhone(institution.getPhone());
         institutionDTO.setUrl(institution.getUrl());
-        institutionDTO.setLogo_url(institution.getLogo_url());
-        institutionDTO.setBackground_url(institution.getBackground_url());
+        institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogo_url()));
+        institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackground_url()));
         return institutionDTO;
     }
 

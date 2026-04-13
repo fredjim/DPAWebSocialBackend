@@ -4,6 +4,8 @@ import com.infsis.socialpagebackend.posts.services.PostService;
 import com.infsis.socialpagebackend.posts.dtos.MediaItemDTO;
 import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.services.InstitutionService;
+import com.infsis.socialpagebackend.multitenant.TenantContext;
+import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,15 @@ public class InstitutionController {
 
     @Autowired
     private PostService postService;
+
+    @GetMapping("/current")
+    public InstitutionDTO getCurrent() {
+        String tenantId = TenantContext.getCurrentTenant();
+        if (tenantId == null) {
+            throw new NotFoundException("Institution", "no tenant in context");
+        }
+        return institutionService.getInstitution(tenantId);
+    }
 
     @GetMapping("/{institutionUuid}")
     public InstitutionDTO get(@PathVariable String institutionUuid) {

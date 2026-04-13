@@ -3,7 +3,7 @@ package com.infsis.socialpagebackend.medias.dtos;
 import lombok.Data;
 
 @Data
-public class VideoFileDTO {
+public class UploadedFileDTO {
 
     private String uuid;
 
@@ -11,7 +11,9 @@ public class VideoFileDTO {
 
     private String urlResource;
 
-    private String type;
+    private String category;
+
+    private String mimeType;
 
     private String status;
 }

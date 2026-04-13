@@ -74,6 +74,24 @@ public class Institution {
     @Column(nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT '0'")
     private boolean deleted;
 
+    @Column(unique = true, length = 100)
+    private String slug;
+
+    @Column(length = 200)
+    private String customDomain;
+
+    @Column(length = 20)
+    private String status = "ACTIVE";
+
+    @Column(length = 30)
+    private String plan = "FREE";
+
+    @Column
+    private Integer maxUsers = 100;
+
+    @Column(columnDefinition = "JSONB")
+    private String settings = "{}";
+
     public Institution() {}
 
     public Institution(Integer id) {
@@ -210,6 +228,54 @@ public class Institution {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getCustomDomain() {
+        return customDomain;
+    }
+
+    public void setCustomDomain(String customDomain) {
+        this.customDomain = customDomain;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public void setPlan(String plan) {
+        this.plan = plan;
+    }
+
+    public Integer getMaxUsers() {
+        return maxUsers;
+    }
+
+    public void setMaxUsers(Integer maxUsers) {
+        this.maxUsers = maxUsers;
+    }
+
+    public String getSettings() {
+        return settings;
+    }
+
+    public void setSettings(String settings) {
+        this.settings = settings;
     }
 
     @PrePersist

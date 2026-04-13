@@ -8,11 +8,9 @@ import com.infsis.socialpagebackend.institutions.repositories.InstitutionReposit
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
 import com.infsis.socialpagebackend.sections.mappers.ArticleMapper;
-import com.infsis.socialpagebackend.sections.mappers.ArticleMediaMapper;
 import com.infsis.socialpagebackend.sections.mappers.SectionMapper;
 import com.infsis.socialpagebackend.sections.models.Article;
 import com.infsis.socialpagebackend.sections.models.Section;
-import com.infsis.socialpagebackend.sections.repositories.ArticleMediaRepository;
 import com.infsis.socialpagebackend.sections.repositories.ArticleRepository;
 import com.infsis.socialpagebackend.sections.repositories.SectionRepository;
 import com.infsis.socialpagebackend.navigation.models.NavItem;
@@ -39,12 +37,6 @@ public class SectionService {
 
     @Autowired
     private SectionMapper sectionMapper;
-
-    @Autowired
-    private ArticleMediaMapper mediaMapper;
-
-    @Autowired
-    private ArticleMediaRepository articleMediaRepository;
 
     @Autowired
     private SectionRepository sectionRepository;
