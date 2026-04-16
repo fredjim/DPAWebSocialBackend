@@ -39,7 +39,6 @@ CREATE INDEX IF NOT EXISTS idx_users_institution_id
 -- ─────────────────────────────────────────────────────────────
 -- 3. TABLAS CRÍTICAS — agregar institution_id (nullable)
 -- ─────────────────────────────────────────────────────────────
-ALTER TABLE public.event   ADD COLUMN IF NOT EXISTS institution_id VARCHAR(36);
 ALTER TABLE public.groups  ADD COLUMN IF NOT EXISTS institution_id VARCHAR(36);
 ALTER TABLE public.comment ADD COLUMN IF NOT EXISTS institution_id VARCHAR(36);
 ALTER TABLE public.article ADD COLUMN IF NOT EXISTS institution_id VARCHAR(36);

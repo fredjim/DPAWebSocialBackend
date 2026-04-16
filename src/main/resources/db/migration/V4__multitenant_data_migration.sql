@@ -44,14 +44,7 @@ SET institution_id = (SELECT uuid FROM public.institution WHERE deleted = false 
 WHERE g.institution_id IS NULL;
 
 -- ─────────────────────────────────────────────────────────────
--- 5. EVENT — backfill con institución única
--- ─────────────────────────────────────────────────────────────
-UPDATE public.event e
-SET institution_id = (SELECT uuid FROM public.institution WHERE deleted = false LIMIT 1)
-WHERE e.institution_id IS NULL;
-
--- ─────────────────────────────────────────────────────────────
--- 6. USERS — backfill con institución única
+-- 5. USERS — backfill con institución única
 --    Los usuarios sin roles o con email de sistema permanecen sin institution_id
 --    para poder ser promovidos a ROOT en el futuro
 -- ─────────────────────────────────────────────────────────────
@@ -60,19 +53,17 @@ SET institution_id = (SELECT uuid FROM public.institution WHERE deleted = false 
 WHERE u.institution_id IS NULL;
 
 -- ─────────────────────────────────────────────────────────────
--- 7. VALIDACIÓN antes de aplicar NOT NULL
+-- 6. VALIDACIÓN antes de aplicar NOT NULL
 -- ─────────────────────────────────────────────────────────────
 DO $$
 DECLARE
     v_comments_sin_tenant  INTEGER;
     v_articles_sin_tenant  INTEGER;
     v_groups_sin_tenant    INTEGER;
-    v_events_sin_tenant    INTEGER;
 BEGIN
     SELECT COUNT(*) INTO v_comments_sin_tenant FROM public.comment WHERE institution_id IS NULL;
     SELECT COUNT(*) INTO v_articles_sin_tenant FROM public.article  WHERE institution_id IS NULL;
     SELECT COUNT(*) INTO v_groups_sin_tenant   FROM public.groups   WHERE institution_id IS NULL;
-    SELECT COUNT(*) INTO v_events_sin_tenant   FROM public.event    WHERE institution_id IS NULL;
 
     IF v_comments_sin_tenant > 0 THEN
         RAISE EXCEPTION 'MIGRACIÓN FALLIDA: % comentarios sin institution_id', v_comments_sin_tenant;
@@ -82,9 +73,6 @@ BEGIN
     END IF;
     IF v_groups_sin_tenant > 0 THEN
         RAISE EXCEPTION 'MIGRACIÓN FALLIDA: % grupos sin institution_id', v_groups_sin_tenant;
-    END IF;
-    IF v_events_sin_tenant > 0 THEN
-        RAISE EXCEPTION 'MIGRACIÓN FALLIDA: % eventos sin institution_id', v_events_sin_tenant;
     END IF;
 
     RAISE NOTICE 'Validación OK: todos los registros tienen institution_id';
@@ -98,7 +86,6 @@ $$;
 ALTER TABLE public.comment ALTER COLUMN institution_id SET NOT NULL;
 ALTER TABLE public.article ALTER COLUMN institution_id SET NOT NULL;
 ALTER TABLE public.groups  ALTER COLUMN institution_id SET NOT NULL;
-ALTER TABLE public.event   ALTER COLUMN institution_id SET NOT NULL;
 
 -- ─────────────────────────────────────────────────────────────
 -- 9. FOREIGN KEY constraints
@@ -115,10 +102,6 @@ ALTER TABLE public.groups
     ADD CONSTRAINT fk_groups_institution
     FOREIGN KEY (institution_id) REFERENCES public.institution(uuid);
 
-ALTER TABLE public.event
-    ADD CONSTRAINT fk_event_institution
-    FOREIGN KEY (institution_id) REFERENCES public.institution(uuid);
-
 ALTER TABLE public.users
     ADD CONSTRAINT fk_users_institution
     FOREIGN KEY (institution_id) REFERENCES public.institution(uuid);
@@ -129,12 +112,10 @@ ALTER TABLE public.users
 CREATE INDEX IF NOT EXISTS idx_comment_institution_id ON public.comment(institution_id);
 CREATE INDEX IF NOT EXISTS idx_article_institution_id ON public.article(institution_id);
 CREATE INDEX IF NOT EXISTS idx_groups_institution_id  ON public.groups(institution_id);
-CREATE INDEX IF NOT EXISTS idx_event_institution_id   ON public.event(institution_id);
 CREATE INDEX IF NOT EXISTS idx_users_institution_id   ON public.users(institution_id);
 
 -- Índice compuesto para búsquedas frecuentes por tenant + estado
 CREATE INDEX IF NOT EXISTS idx_comment_inst_state ON public.comment(institution_id, state);
-CREATE INDEX IF NOT EXISTS idx_event_inst_start   ON public.event(institution_id, start_date);
 
 -- ─────────────────────────────────────────────────────────────
 -- Consultas de verificación post-migración (ejecutar manualmente):
@@ -146,8 +127,6 @@ CREATE INDEX IF NOT EXISTS idx_event_inst_start   ON public.event(institution_id
 -- SELECT 'articles sin tenant',          COUNT(*) FROM public.article  WHERE institution_id IS NULL
 -- UNION ALL
 -- SELECT 'groups sin tenant',            COUNT(*) FROM public.groups   WHERE institution_id IS NULL
--- UNION ALL
--- SELECT 'events sin tenant',            COUNT(*) FROM public.event    WHERE institution_id IS NULL
 -- UNION ALL
 -- SELECT 'users sin tenant',             COUNT(*) FROM public.users    WHERE institution_id IS NULL;
 -- ─────────────────────────────────────────────────────────────
