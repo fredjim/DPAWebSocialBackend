@@ -9,11 +9,6 @@ CREATE SEQUENCE IF NOT EXISTS public.article_seq         START WITH 1 INCREMENT 
 CREATE SEQUENCE IF NOT EXISTS public.comment_seq         START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 CREATE SEQUENCE IF NOT EXISTS public.comment_reaction_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 CREATE SEQUENCE IF NOT EXISTS public.content_seq         START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
-CREATE SEQUENCE IF NOT EXISTS public.event_category_seq  START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
-CREATE SEQUENCE IF NOT EXISTS public.event_invitation_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
-CREATE SEQUENCE IF NOT EXISTS public.event_media_seq     START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
-CREATE SEQUENCE IF NOT EXISTS public.event_registration_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
-CREATE SEQUENCE IF NOT EXISTS public.event_seq           START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 CREATE SEQUENCE IF NOT EXISTS public.institution_seq     START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 CREATE SEQUENCE IF NOT EXISTS public.link_seq            START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 CREATE SEQUENCE IF NOT EXISTS public.media_seq           START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -54,18 +49,6 @@ CREATE TABLE IF NOT EXISTS public.emoji_type (
     uuid       character varying(36) NOT NULL UNIQUE,
     emoji_code character varying(5)  NOT NULL,
     emoji_name character varying(50) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS public.event_category (
-    id               integer NOT NULL PRIMARY KEY,
-    is_active        boolean NOT NULL,
-    color            character varying(7),
-    created_date     timestamp(6) without time zone,
-    last_modified_date timestamp(6) without time zone,
-    uuid             character varying(36) NOT NULL UNIQUE,
-    icon             character varying(50),
-    name             character varying(100) NOT NULL,
-    description      character varying(500)
 );
 
 CREATE TABLE IF NOT EXISTS public.invalid_token (
@@ -339,74 +322,3 @@ CREATE TABLE IF NOT EXISTS public.link (
     CONSTRAINT link_owner_type_check CHECK (owner_type IN ('ARTICLE','POST','INSTITUTION','USER'))
 );
 
-CREATE TABLE IF NOT EXISTS public.event (
-    id                   integer NOT NULL PRIMARY KEY,
-    deleted              boolean DEFAULT false NOT NULL,
-    is_public            boolean NOT NULL,
-    max_capacity         integer NOT NULL,
-    requires_registration boolean NOT NULL,
-    created_date         timestamp(6) without time zone,
-    end_date             timestamp(6) without time zone,
-    last_modified_date   timestamp(6) without time zone,
-    start_date           timestamp(6) without time zone NOT NULL,
-    uuid                 character varying(36)   NOT NULL UNIQUE,
-    status               character varying(20),
-    user_id              character varying(36)   NOT NULL,
-    cover_image_path     character varying(100),
-    title                character varying(200)  NOT NULL,
-    location             character varying(500),
-    description          character varying(2000)
-);
-
-CREATE TABLE IF NOT EXISTS public.event_invitation (
-    id                 integer NOT NULL PRIMARY KEY,
-    deleted            boolean DEFAULT false NOT NULL,
-    email_sent         boolean NOT NULL,
-    created_date       timestamp(6) without time zone,
-    email_sent_date    timestamp(6) without time zone,
-    expiration_date    timestamp(6) without time zone,
-    invitation_date    timestamp(6) without time zone NOT NULL,
-    last_modified_date timestamp(6) without time zone,
-    response_date      timestamp(6) without time zone,
-    uuid               character varying(36)  NOT NULL UNIQUE,
-    status             character varying(20),
-    event_id           character varying(36)  NOT NULL,
-    invited_user_id    character varying(36)  NOT NULL,
-    inviter_user_id    character varying(36)  NOT NULL,
-    invitation_token   character varying(100),
-    personal_message   character varying(500)
-);
-
-CREATE TABLE IF NOT EXISTS public.event_media (
-    id                 integer NOT NULL PRIMARY KEY,
-    deleted            boolean DEFAULT false NOT NULL,
-    display_order      integer NOT NULL,
-    is_cover           boolean NOT NULL,
-    is_public          boolean NOT NULL,
-    created_date       timestamp(6) without time zone,
-    file_size          bigint NOT NULL,
-    last_modified_date timestamp(6) without time zone,
-    uuid               character varying(36)  NOT NULL UNIQUE,
-    event_id           character varying(36)  NOT NULL,
-    file_type          character varying(50)  NOT NULL,
-    mime_type          character varying(50)  NOT NULL,
-    file_name          character varying(150) NOT NULL,
-    alt_text           character varying(200),
-    file_path          character varying(200) NOT NULL,
-    description        character varying(500)
-);
-
-CREATE TABLE IF NOT EXISTS public.event_registration (
-    id                       integer NOT NULL PRIMARY KEY,
-    deleted                  boolean DEFAULT false NOT NULL,
-    email_notification_sent  boolean NOT NULL,
-    reminder_sent            boolean NOT NULL,
-    created_date             timestamp(6) without time zone,
-    last_modified_date       timestamp(6) without time zone,
-    registration_date        timestamp(6) without time zone NOT NULL,
-    uuid                     character varying(36)  NOT NULL UNIQUE,
-    status                   character varying(20),
-    event_id                 character varying(36)  NOT NULL,
-    user_id                  character varying(36)  NOT NULL,
-    confirmation_code        character varying(100)
-);
