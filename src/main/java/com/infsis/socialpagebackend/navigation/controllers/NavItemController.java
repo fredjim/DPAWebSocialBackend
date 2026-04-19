@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.navigation.controllers;
 
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.navigation.dtos.NavItemDTO;
 import com.infsis.socialpagebackend.navigation.services.NavItemService;
 import jakarta.validation.Valid;
@@ -18,14 +19,19 @@ public class NavItemController {
     @Autowired
     private NavItemService navItemService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     @GetMapping("/{uuid}")
     public NavItemDTO get(@PathVariable String uuid) {
         return navItemService.getNavItem(uuid);
     }
 
     @GetMapping
-    public List<NavItemDTO> getAllByInstitution(@RequestParam(name = "institution_id", required = true) String institutionUuid) {
-        return navItemService.getAllByInstitution(institutionUuid);
+    public List<NavItemDTO> getAllByInstitution(
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
+        return navItemService.getAllByInstitution(tenantId);
     }
 
     @PostMapping

@@ -11,6 +11,7 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.TokenRepository;
 import com.infsis.socialpagebackend.authentication.repositories.RoleRepository;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import com.infsis.socialpagebackend.authentication.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +48,9 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     private AuthenticationManager authenticationManager;
     private PasswordEncoder passwordEncoder;
     private RoleRepository rolesRepository;
@@ -64,7 +68,12 @@ public class AuthenticationController {
 
     //Método para poder registrar usuarios con role "user"
     @PostMapping("/auth/register")
-    public ResponseEntity<Map<String, Object>> registrar(@Valid @RequestBody UserRegistryDTO userRegistryDTO) {
+    public ResponseEntity<Map<String, Object>> registrar(
+            @Valid @RequestBody UserRegistryDTO userRegistryDTO,
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
+
         if (!userRegistryDTO.getPassword().equals(userRegistryDTO.getRepeat_password())) {
             return new ResponseEntity<>(Collections.singletonMap("message", PASSWORD_INVALID_MATCHING_MESSAGE), HttpStatus.BAD_REQUEST);
         }
@@ -79,6 +88,7 @@ public class AuthenticationController {
         usuarios.setEmail(userRegistryDTO.getEmail());
         usuarios.setPhone(userRegistryDTO.getPhone());
         usuarios.setPassword(passwordEncoder.encode(userRegistryDTO.getPassword()));
+        usuarios.setInstitutionId(tenantId);
 
         Role roles = rolesRepository.findByName(ROLE_STUDENT).get();
         usuarios.setRoles(Collections.singletonList(roles));
@@ -153,10 +163,19 @@ public class AuthenticationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping("/auth/root/login")
+    public ResponseEntity<AuthResponseDTO> rootLogin(@RequestBody UserLoginDTO userLoginDTO) {
+        AuthResponseDTO response = authenticationService.rootLogin(userLoginDTO);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     //Método para poder logear un usuario y obtener un token
     @PostMapping("/auth/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        AuthResponseDTO response = authenticationService.login(userLoginDTO);
+    public ResponseEntity<AuthResponseDTO> login(
+            @RequestBody UserLoginDTO userLoginDTO,
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
+        AuthResponseDTO response = authenticationService.login(userLoginDTO, tenantId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

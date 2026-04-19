@@ -55,11 +55,34 @@ public class AuthenticationService {
     }
 
     /**
-     * Login: autentica usuario, genera tokens y revoca los anteriores.
+     * Login exclusivo para usuarios ROOT. No requiere tenant.
      */
-    public AuthResponseDTO login(UserLoginDTO userLoginDTO) {
+    public AuthResponseDTO rootLogin(UserLoginDTO userLoginDTO) {
         authenticateUser(userLoginDTO.getEmail(), userLoginDTO.getPassword());
         Users user = findUserByEmail(userLoginDTO.getEmail());
+
+        if (!user.isRoot()) {
+            throw new IllegalArgumentException("Acceso denegado: este endpoint es exclusivo para usuarios ROOT.");
+        }
+
+        String accessToken = jwtGenerator.generarAccessToken(user);
+        String refreshToken = jwtGenerator.generarRefreshToken(user);
+        revokeAllUserRefreshTokens(user);
+        saveRefreshTokenToDatabase(user, refreshToken);
+        return new AuthResponseDTO(accessToken, refreshToken);
+    }
+
+    /**
+     * Login: autentica usuario, valida que pertenezca al tenant, genera tokens y revoca los anteriores.
+     */
+    public AuthResponseDTO login(UserLoginDTO userLoginDTO, String tenantId) {
+        authenticateUser(userLoginDTO.getEmail(), userLoginDTO.getPassword());
+        Users user = findUserByEmail(userLoginDTO.getEmail());
+
+        if (user.getInstitutionId() == null || !user.getInstitutionId().equals(tenantId)) {
+            throw new IllegalArgumentException("El usuario no pertenece a esta institución.");
+        }
+
         String accessToken = jwtGenerator.generarAccessToken(user);
         String refreshToken = jwtGenerator.generarRefreshToken(user);
         revokeAllUserRefreshTokens(user);

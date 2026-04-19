@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.sections.controllers;
 
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.sections.services.ArticleService;
 import jakarta.validation.Valid;
@@ -18,6 +19,9 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     @GetMapping("/{articleUuid}")
     public ArticleDTO get(@PathVariable String articleUuid) {
         return articleService.getArticle(articleUuid);
@@ -29,8 +33,11 @@ public class ArticleController {
     }
 
     @GetMapping("/section/{sectionUuid}")
-    public List<ArticleDTO> getAllBySection(@PathVariable String sectionUuid) {
-        return articleService.getAllBySection(sectionUuid);
+    public List<ArticleDTO> getAllBySection(
+            @PathVariable String sectionUuid,
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
+        return articleService.getAllBySection(sectionUuid, tenantId);
     }
 
     @PostMapping
