@@ -5,13 +5,9 @@ import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
-import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
-import com.infsis.socialpagebackend.sections.mappers.ArticleMapper;
 import com.infsis.socialpagebackend.sections.mappers.SectionMapper;
-import com.infsis.socialpagebackend.sections.models.Article;
 import com.infsis.socialpagebackend.sections.models.Section;
-import com.infsis.socialpagebackend.sections.repositories.ArticleRepository;
 import com.infsis.socialpagebackend.sections.repositories.SectionRepository;
 import com.infsis.socialpagebackend.navigation.models.NavItem;
 import com.infsis.socialpagebackend.navigation.repositories.NavItemRepository;
@@ -21,19 +17,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class SectionService {
-
-    @Autowired
-    private ArticleRepository articleRepository;
-
-    @Autowired
-    private ArticleMapper articleMapper;
 
     @Autowired
     private SectionMapper sectionMapper;
@@ -89,27 +78,15 @@ public class SectionService {
 
         log.info("User id :" + user.getUuid());
 
-        Section section = new Section();
-        SectionDTO resDTO = new SectionDTO();
-
-        if (user != null) {
-            List<Article> articles = saveArticles(sectionDTO.getArticles(), section, user);
-
-            NavItem navItem = null;
-            if (sectionDTO.getNav_item_id() != null) {
-                navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
-            }
-
-            section = sectionMapper.getSection(sectionDTO, institution, user, navItem);
-            section.setArticles(articles);
-
-            sectionRepository.save(section);
-
-            resDTO = sectionMapper.toDTO(section);
-
+        NavItem navItem = null;
+        if (sectionDTO.getNav_item_id() != null) {
+            navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
         }
 
-        return resDTO;
+        Section section = sectionMapper.getSection(sectionDTO, institution, user, navItem);
+        sectionRepository.save(section);
+
+        return sectionMapper.toDTO(section);
     }
 
     public SectionDTO deleteSection(String sectionUuid) {
@@ -117,21 +94,6 @@ public class SectionService {
         section.setDeleted(true);
         sectionRepository.save(section);
         return sectionMapper.toDTO(section);
-    }
-
-    private List<Article> saveArticles(List<ArticleDTO> articleDTOS, Section section, Users user){
-        List<Article> articles = new ArrayList<>();
-        if(articleDTOS != null ) {
-            articles = articleDTOS
-                    .stream()
-                    .map(article -> articleMapper.getArticle(article, section, user))
-                    .collect(Collectors.toList());
-
-            articles.stream().forEach(
-                    (article) -> articleRepository.save(article)
-            );
-        }
-        return articles;
     }
 
     public SectionDTO updateSection(String sectionUuid, SectionDTO sectionDTO) {
@@ -146,12 +108,6 @@ public class SectionService {
         Section foundSection = sectionRepository.findOneByUuid(sectionUuid);
         if (foundSection == null || foundSection.isDeleted()) {
             throw new NotFoundException("Section", sectionUuid);
-        }
-
-        if (foundSection.getArticles() != null) {
-
-            List<Article> articles = saveArticles(sectionDTO.getArticles(), foundSection, user);
-            foundSection.setArticles(articles);
         }
 
         // Resolver navItem si viene en DTO

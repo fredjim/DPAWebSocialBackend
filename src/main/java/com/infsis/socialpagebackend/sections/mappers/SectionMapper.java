@@ -5,16 +5,10 @@ import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.navigation.models.NavItem;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
 import com.infsis.socialpagebackend.sections.models.Section;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
 
 @Component
 public class SectionMapper {
-
-    @Autowired
-    private ArticleMapper articleMapper;
 
     public SectionDTO toDTO(Section section) {
 
@@ -26,13 +20,6 @@ public class SectionMapper {
         sectionDTO.setUser_id(section.getUsers().getUuid());
         sectionDTO.setInstitution_id(section.getInstitution().getUuid());
         sectionDTO.setNav_item_id(section.getNavItem() != null ? section.getNavItem().getUuid() : null);
-
-        sectionDTO.setArticles(
-                section.getArticles()
-                        .stream()
-                        .map(article -> articleMapper.toDTO(article))
-                        .collect(Collectors.toList())
-        );
 
         return sectionDTO;
     }
