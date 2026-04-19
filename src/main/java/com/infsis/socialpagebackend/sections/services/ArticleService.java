@@ -84,8 +84,12 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleDTO> getAllBySection(String sectionUuid) {
-        String tenantId = TenantContext.getCurrentTenant();
+    public List<ArticleDTO> getAllBySection(String sectionUuid, String tenantId) {
+        Section section = sectionRepository.findOneByUuid(sectionUuid);
+        if (section == null || section.isDeleted()) {
+            throw new NotFoundException("Section", sectionUuid);
+        }
+
         return articleRepository
                 .findAllByInstitutionId(tenantId)
                 .stream()
@@ -115,7 +119,10 @@ public class ArticleService {
         log.info("User id :" + user.getUuid());
 
         ArticleDTO resDTO = new ArticleDTO();
-        Article article = articleRepository.save(new Article());
+        String tenantId = TenantContext.getCurrentTenant();
+        Article stub = new Article();
+        stub.setInstitutionId(tenantId);
+        Article article = articleRepository.save(stub);
         if (section != null && user != null) {
             List<Media> medias = saveMedia(articleDTO.getMedias(), article);
 
@@ -127,6 +134,7 @@ public class ArticleService {
             article.setText(articleDTO.getText());
             article.setDate(articleDTO.getDate());
             article.setArticle_medias(medias);
+            article.setInstitutionId(tenantId);
 
             articleRepository.save(article);
 

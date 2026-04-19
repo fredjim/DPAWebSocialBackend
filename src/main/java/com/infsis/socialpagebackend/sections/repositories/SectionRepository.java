@@ -19,4 +19,7 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
 
     @Query("SELECT s FROM Section s WHERE s.navItem.uuid = ?1 AND s.deleted = false ORDER BY s.createdDate ASC")
     List<Section> findByNavItemUuid(String navItemUuid);
+
+    @Query("SELECT s FROM Section s WHERE s.institution.uuid = ?1 AND s.deleted = false ORDER BY s.createdDate ASC")
+    List<Section> findByInstitutionUuid(String institutionUuid);
 }

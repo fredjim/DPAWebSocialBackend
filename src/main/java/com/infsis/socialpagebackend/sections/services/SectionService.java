@@ -63,11 +63,10 @@ public class SectionService {
         return sectionMapper.toDTO(section);
     }
 
-    public List<SectionDTO> getAllSections() {
+    public List<SectionDTO> getAllSections(String tenantId) {
         return sectionRepository
-                .findAll()
+                .findByInstitutionUuid(tenantId)
                 .stream()
-                .filter(section -> !section.isDeleted())
                 .map(section -> sectionMapper.toDTO(section))
                 .collect(Collectors.toList());
     }

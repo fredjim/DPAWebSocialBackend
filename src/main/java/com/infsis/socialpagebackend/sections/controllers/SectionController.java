@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.sections.controllers;
 
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
 import com.infsis.socialpagebackend.sections.services.SectionService;
 import jakarta.validation.Valid;
@@ -24,8 +25,19 @@ public class SectionController {
     }
 
     @GetMapping
-    public List<SectionDTO> getAll() {
-        return sectionService.getAllSections();
+    public List<SectionDTO> getAll(
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+
+        if (tenantSlug == null || tenantSlug.isBlank()) {
+            throw new IllegalArgumentException("El header X-Tenant-Slug es requerido");
+        }
+
+        String tenantId = TenantContext.getCurrentTenant();
+        if (tenantId == null) {
+            throw new IllegalArgumentException("Institución no encontrada para el slug: " + tenantSlug);
+        }
+
+        return sectionService.getAllSections(tenantId);
     }
 
     @GetMapping(params = "name")  // This will match /api/v1/sections?name={name}
