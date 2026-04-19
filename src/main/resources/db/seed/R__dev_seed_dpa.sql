@@ -134,20 +134,20 @@ ON CONFLICT DO NOTHING;
 -- 5. NAV ITEMS → SECTIONS → ARTICLES
 -- ─────────────────────────────────────────────────────────────
 -- Usa nav_item_seq, section_seq, article_seq (Hibernate, increment=50).
-INSERT INTO public.nav_item (id, uuid, institution_id, user_id, label, url, item_order, visible, deleted) VALUES
-(100, 'dpa-nav-100-0000-0000-000000000100', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Inicio',   '/', 1, TRUE, FALSE),
-(101, 'dpa-nav-101-0000-0000-000000000101', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Noticias', '/noticias', 2, TRUE, FALSE),
-(200, 'fcy-nav-200-0000-0000-000000000200', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'Inicio',   '/', 1, TRUE, FALSE),
-(201, 'fcy-nav-201-0000-0000-000000000201', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'Noticias', '/noticias', 2, TRUE, FALSE),
-(300, 'fhc-nav-300-0000-0000-000000000300', 'dd000012-4000-4000-8000-000000000012', 'dd000300-4000-4000-8000-000000000300', 'Inicio',   '/', 1, TRUE, FALSE),
+INSERT INTO public.nav_item (id, uuid, institution_id, user_id, label, path, item_order, visible, deleted) VALUES
+(100, 'dpa-nav-100-0000-0000-000000000100', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Inicio',        '/',              1, TRUE, FALSE),
+(101, 'dpa-nav-101-0000-0000-000000000101', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'Noticias',      '/noticias',      2, TRUE, FALSE),
+(200, 'fcy-nav-200-0000-0000-000000000200', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'Inicio',        '/',              1, TRUE, FALSE),
+(201, 'fcy-nav-201-0000-0000-000000000201', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'Noticias',      '/noticias',      2, TRUE, FALSE),
+(300, 'fhc-nav-300-0000-0000-000000000300', 'dd000012-4000-4000-8000-000000000012', 'dd000300-4000-4000-8000-000000000300', 'Inicio',        '/',              1, TRUE, FALSE),
 (301, 'fhc-nav-301-0000-0000-000000000301', 'dd000012-4000-4000-8000-000000000012', 'dd000300-4000-4000-8000-000000000300', 'Publicaciones', '/publicaciones', 2, TRUE, FALSE)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO public.section (id, uuid, institution_id, user_id, nav_item_id, name, date, deleted) VALUES
-(100, 'dpa-sec-100-0000-0000-000000000100', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'dpa-nav-101-0000-0000-000000000101', 'Noticias DPA', '2025-01-01 00:00:00', FALSE),
-(101, 'dpa-sec-101-0000-0000-000000000101', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'dpa-nav-101-0000-0000-000000000101', 'Eventos DPA',  '2025-01-01 00:00:00', FALSE),
-(200, 'fcy-sec-200-0000-0000-000000000200', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'fcy-nav-201-0000-0000-000000000201', 'Noticias FCyT','2025-01-01 00:00:00', FALSE),
-(300, 'fhc-sec-300-0000-0000-000000000300', 'dd000012-4000-4000-8000-000000000012', 'dd000300-4000-4000-8000-000000000300', 'fhc-nav-301-0000-0000-000000000301', 'Publicaciones FHCE','2025-01-01 00:00:00', FALSE)
+INSERT INTO public.section (id, uuid, institution_id, user_id, nav_item_id, name, path, date, deleted) VALUES
+(100, 'dpa-sec-100-0000-0000-000000000100', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'dpa-nav-101-0000-0000-000000000101', 'Noticias DPA',       '/noticias-dpa',       '2025-01-01 00:00:00', FALSE),
+(101, 'dpa-sec-101-0000-0000-000000000101', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'a5f6a74c-3004-4c03-8fcb-3a7fe9d19b49', 'dpa-nav-101-0000-0000-000000000101', 'Eventos DPA',        '/eventos-dpa',        '2025-01-01 00:00:00', FALSE),
+(200, 'fcy-sec-200-0000-0000-000000000200', 'cc000011-4000-4000-8000-000000000011', 'cc000200-4000-4000-8000-000000000200', 'fcy-nav-201-0000-0000-000000000201', 'Noticias FCyT',      '/noticias-fcyt',      '2025-01-01 00:00:00', FALSE),
+(300, 'fhc-sec-300-0000-0000-000000000300', 'dd000012-4000-4000-8000-000000000012', 'dd000300-4000-4000-8000-000000000300', 'fhc-nav-301-0000-0000-000000000301', 'Publicaciones FHCE', '/publicaciones-fhce', '2025-01-01 00:00:00', FALSE)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.article (id, uuid, section_id, user_id, institution_id, title, text, date, deleted) VALUES

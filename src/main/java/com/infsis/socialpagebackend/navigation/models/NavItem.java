@@ -45,8 +45,8 @@ public class NavItem {
     @Column(nullable = false, length = 200)
     private String label;
 
-    @Column(length = 1000)
-    private String url;
+    @Column(length = 50)
+    private String path;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT '1'")
     private boolean visible = true;

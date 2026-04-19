@@ -15,17 +15,16 @@ import java.util.Date;
 public class NavItemDTO {
     private String uuid;
 
-    @NotBlank
-    @Size(min = 36, max = 40)
     private String institution_id;
 
-    @Size(min = 36, max = 40)
+    @Size(min = 30, max = 40)
     private String user_id;
 
     @NotBlank
     private String label;
 
-    private String url;
+    @NotBlank
+    private String path;
 
     // Permitir null para actualizaciones parciales
     private Boolean visible;

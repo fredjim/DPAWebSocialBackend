@@ -16,7 +16,7 @@ public class NavItemMapper {
         dto.setUser_id(navItem.getUsers() != null ? navItem.getUsers().getUuid() : null);
         dto.setInstitution_id(navItem.getInstitution() != null ? navItem.getInstitution().getUuid() : null);
         dto.setLabel(navItem.getLabel());
-        dto.setUrl(navItem.getUrl());
+        dto.setPath(navItem.getPath());
         dto.setVisible(navItem.isVisible());
         dto.setOrderIndex(navItem.getOrderIndex());
         dto.setCreatedDate(navItem.getCreatedDate());
@@ -27,7 +27,7 @@ public class NavItemMapper {
     public NavItem getNavItem(NavItemDTO dto, Institution institution, Users user) {
         NavItem navItem = new NavItem();
         navItem.setLabel(dto.getLabel());
-        navItem.setUrl(dto.getUrl());
+        navItem.setPath(dto.getPath());
         navItem.setVisible(dto.getVisible() != null ? dto.getVisible() : true);
         navItem.setOrderIndex(dto.getOrderIndex() != null ? dto.getOrderIndex() : 0);
         navItem.setInstitution(institution);

@@ -3,8 +3,10 @@ package com.infsis.socialpagebackend.navigation.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import org.springframework.dao.DuplicateKeyException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.navigation.dtos.NavItemDTO;
 import com.infsis.socialpagebackend.navigation.mappers.NavItemMapper;
 import com.infsis.socialpagebackend.navigation.models.NavItem;
@@ -53,8 +55,9 @@ public class NavItemService {
     }
 
     public NavItemDTO createNavItem(NavItemDTO dto) {
-        Institution institution = institutionRepository.findOneByUuid(dto.getInstitution_id());
-        if (institution == null) throw new NotFoundException("Institution", dto.getInstitution_id());
+        String tenantId = TenantContext.getCurrentTenant();
+        Institution institution = institutionRepository.findOneByUuid(tenantId);
+        if (institution == null) throw new NotFoundException("Institution", tenantId);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -62,6 +65,10 @@ public class NavItemService {
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
         log.info("User id :" + user.getUuid());
+
+        if (navItemRepository.existsByInstitutionUuidAndPath(tenantId, dto.getPath())) {
+            throw new DuplicateKeyException("Already exists a nav_item with the path '" + dto.getPath() + "' in this institution");
+        }
 
         NavItem navItem = navItemMapper.getNavItem(dto, institution, user);
         navItemRepository.save(navItem);
@@ -82,7 +89,12 @@ public class NavItemService {
         log.info("User id :" + user.getUuid());
 
         if (dto.getLabel() != null) existing.setLabel(dto.getLabel());
-        if (dto.getUrl() != null) existing.setUrl(dto.getUrl());
+        if (dto.getPath() != null) {
+            if (navItemRepository.existsByInstitutionUuidAndPathAndUuidNot(existing.getInstitution().getUuid(), dto.getPath(), uuid)) {
+                throw new DuplicateKeyException("Already exists a nav_item with the path '" + dto.getPath() + "' in this institution");
+            }
+            existing.setPath(dto.getPath());
+        }
         if (dto.getVisible() != null) existing.setVisible(dto.getVisible());
         if (dto.getOrderIndex() != null) existing.setOrderIndex(dto.getOrderIndex());
 
