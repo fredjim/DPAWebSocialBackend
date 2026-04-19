@@ -51,6 +51,9 @@ public class Section {
     @Column(nullable = false, length = 1000)
     private String name;
 
+    @Column(length = 50)
+    private String path;
+
     @Column(nullable = false)
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private Date date;

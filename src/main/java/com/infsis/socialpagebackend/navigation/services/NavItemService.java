@@ -3,6 +3,7 @@ package com.infsis.socialpagebackend.navigation.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import org.springframework.dao.DuplicateKeyException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
 import com.infsis.socialpagebackend.navigation.dtos.NavItemDTO;
@@ -63,6 +64,10 @@ public class NavItemService {
 
         log.info("User id :" + user.getUuid());
 
+        if (navItemRepository.existsByInstitutionUuidAndPath(dto.getInstitution_id(), dto.getPath())) {
+            throw new DuplicateKeyException("Already exists a nav_item with the path '" + dto.getPath() + "' in this institution");
+        }
+
         NavItem navItem = navItemMapper.getNavItem(dto, institution, user);
         navItemRepository.save(navItem);
         return navItemMapper.toDTO(navItem);
@@ -82,7 +87,12 @@ public class NavItemService {
         log.info("User id :" + user.getUuid());
 
         if (dto.getLabel() != null) existing.setLabel(dto.getLabel());
-        if (dto.getUrl() != null) existing.setUrl(dto.getUrl());
+        if (dto.getPath() != null) {
+            if (navItemRepository.existsByInstitutionUuidAndPathAndUuidNot(existing.getInstitution().getUuid(), dto.getPath(), uuid)) {
+                throw new DuplicateKeyException("Already exists a nav_item with the path '" + dto.getPath() + "' in this institution");
+            }
+            existing.setPath(dto.getPath());
+        }
         if (dto.getVisible() != null) existing.setVisible(dto.getVisible());
         if (dto.getOrderIndex() != null) existing.setOrderIndex(dto.getOrderIndex());
 

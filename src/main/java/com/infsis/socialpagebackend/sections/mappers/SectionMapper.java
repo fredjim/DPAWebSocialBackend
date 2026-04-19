@@ -16,6 +16,7 @@ public class SectionMapper {
 
         sectionDTO.setUuid(section.getUuid());
         sectionDTO.setName(section.getName());
+        sectionDTO.setPath(section.getPath());
         sectionDTO.setDate(section.getDate());
         sectionDTO.setUser_id(section.getUsers().getUuid());
         sectionDTO.setInstitution_id(section.getInstitution().getUuid());
@@ -32,6 +33,7 @@ public class SectionMapper {
         section.setUsers(user);
         section.setNavItem(navItem);
         section.setName(sectionDTO.getName());
+        section.setPath(sectionDTO.getPath());
         section.setDate(sectionDTO.getDate());
 
         return section;

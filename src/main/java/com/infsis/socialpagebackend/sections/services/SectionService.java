@@ -3,6 +3,7 @@ package com.infsis.socialpagebackend.sections.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import org.springframework.dao.DuplicateKeyException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
@@ -78,6 +79,10 @@ public class SectionService {
 
         log.info("User id :" + user.getUuid());
 
+        if (sectionRepository.existsByInstitutionUuidAndPath(sectionDTO.getInstitution_id(), sectionDTO.getPath())) {
+            throw new DuplicateKeyException("Already exists a section with the path '" + sectionDTO.getPath() + "' in this institution");
+        }
+
         NavItem navItem = null;
         if (sectionDTO.getNav_item_id() != null) {
             navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
@@ -110,7 +115,13 @@ public class SectionService {
             throw new NotFoundException("Section", sectionUuid);
         }
 
-        // Resolver navItem si viene en DTO
+        if (sectionDTO.getPath() != null && !sectionDTO.getPath().equals(foundSection.getPath())) {
+            if (sectionRepository.existsByInstitutionUuidAndPathAndUuidNot(foundSection.getInstitution().getUuid(), sectionDTO.getPath(), sectionUuid)) {
+                throw new DuplicateKeyException("Already exists a section with the path '" + sectionDTO.getPath() + "' in this institution");
+            }
+            foundSection.setPath(sectionDTO.getPath());
+        }
+
         if (sectionDTO.getNav_item_id() != null) {
             NavItem navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
             foundSection.setNavItem(navItem);
