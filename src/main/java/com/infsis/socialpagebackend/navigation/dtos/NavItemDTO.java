@@ -15,8 +15,6 @@ import java.util.Date;
 public class NavItemDTO {
     private String uuid;
 
-    @NotBlank
-    @Size(min = 30, max = 40)
     private String institution_id;
 
     @Size(min = 30, max = 40)

@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.sections.services;
 
+import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
@@ -70,7 +71,8 @@ public class SectionService {
 
     public SectionDTO saveSection(SectionDTO sectionDTO) {
 
-        Institution institution = institutionRepository.findOneByUuid(sectionDTO.getInstitution_id());
+        String tenantId = TenantContext.getCurrentTenant();
+        Institution institution = institutionRepository.findOneByUuid(tenantId);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -79,7 +81,7 @@ public class SectionService {
 
         log.info("User id :" + user.getUuid());
 
-        if (sectionRepository.existsByInstitutionUuidAndPath(sectionDTO.getInstitution_id(), sectionDTO.getPath())) {
+        if (sectionRepository.existsByInstitutionUuidAndPath(tenantId, sectionDTO.getPath())) {
             throw new DuplicateKeyException("Already exists a section with the path '" + sectionDTO.getPath() + "' in this institution");
         }
 
