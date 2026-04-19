@@ -1,6 +1,6 @@
 package com.infsis.socialpagebackend.sections.controllers;
 
-import com.infsis.socialpagebackend.multitenant.TenantContext;
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.sections.dtos.SectionDTO;
 import com.infsis.socialpagebackend.sections.services.SectionService;
 import jakarta.validation.Valid;
@@ -19,6 +19,9 @@ public class SectionController {
     @Autowired
     private SectionService sectionService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     @GetMapping("/{sectionUuid}")
     public SectionDTO get(@PathVariable String sectionUuid) {
         return sectionService.getSection(sectionUuid);
@@ -27,16 +30,7 @@ public class SectionController {
     @GetMapping
     public List<SectionDTO> getAll(
             @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
-
-        if (tenantSlug == null || tenantSlug.isBlank()) {
-            throw new IllegalArgumentException("El header X-Tenant-Slug es requerido");
-        }
-
-        String tenantId = TenantContext.getCurrentTenant();
-        if (tenantId == null) {
-            throw new IllegalArgumentException("Institución no encontrada para el slug: " + tenantSlug);
-        }
-
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
         return sectionService.getAllSections(tenantId);
     }
 

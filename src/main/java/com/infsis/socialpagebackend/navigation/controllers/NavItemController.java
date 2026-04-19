@@ -1,6 +1,6 @@
 package com.infsis.socialpagebackend.navigation.controllers;
 
-import com.infsis.socialpagebackend.multitenant.TenantContext;
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.navigation.dtos.NavItemDTO;
 import com.infsis.socialpagebackend.navigation.services.NavItemService;
 import jakarta.validation.Valid;
@@ -19,6 +19,9 @@ public class NavItemController {
     @Autowired
     private NavItemService navItemService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     @GetMapping("/{uuid}")
     public NavItemDTO get(@PathVariable String uuid) {
         return navItemService.getNavItem(uuid);
@@ -27,16 +30,7 @@ public class NavItemController {
     @GetMapping
     public List<NavItemDTO> getAllByInstitution(
             @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
-
-        if (tenantSlug == null || tenantSlug.isBlank()) {
-            throw new IllegalArgumentException("El header X-Tenant-Slug es requerido");
-        }
-
-        String tenantId = TenantContext.getCurrentTenant();
-        if (tenantId == null) {
-            throw new IllegalArgumentException("Institución no encontrada para el slug: " + tenantSlug);
-        }
-
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
         return navItemService.getAllByInstitution(tenantId);
     }
 

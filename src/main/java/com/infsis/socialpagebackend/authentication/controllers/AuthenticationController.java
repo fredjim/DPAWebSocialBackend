@@ -11,7 +11,7 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.TokenRepository;
 import com.infsis.socialpagebackend.authentication.repositories.RoleRepository;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
-import com.infsis.socialpagebackend.multitenant.TenantContext;
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import com.infsis.socialpagebackend.authentication.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +48,9 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
     private AuthenticationManager authenticationManager;
     private PasswordEncoder passwordEncoder;
     private RoleRepository rolesRepository;
@@ -69,14 +72,7 @@ public class AuthenticationController {
             @Valid @RequestBody UserRegistryDTO userRegistryDTO,
             @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
 
-        if (tenantSlug == null || tenantSlug.isBlank()) {
-            return new ResponseEntity<>(Collections.singletonMap("message", "El header X-Tenant-Slug es requerido"), HttpStatus.BAD_REQUEST);
-        }
-
-        String tenantId = TenantContext.getCurrentTenant();
-        if (tenantId == null) {
-            return new ResponseEntity<>(Collections.singletonMap("message", "Institución no encontrada para el slug: " + tenantSlug), HttpStatus.NOT_FOUND);
-        }
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
 
         if (!userRegistryDTO.getPassword().equals(userRegistryDTO.getRepeat_password())) {
             return new ResponseEntity<>(Collections.singletonMap("message", PASSWORD_INVALID_MATCHING_MESSAGE), HttpStatus.BAD_REQUEST);
@@ -178,16 +174,7 @@ public class AuthenticationController {
     public ResponseEntity<AuthResponseDTO> login(
             @RequestBody UserLoginDTO userLoginDTO,
             @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
-
-        if (tenantSlug == null || tenantSlug.isBlank()) {
-            throw new IllegalArgumentException("El header X-Tenant-Slug es requerido");
-        }
-
-        String tenantId = TenantContext.getCurrentTenant();
-        if (tenantId == null) {
-            throw new IllegalArgumentException("Institución no encontrada para el slug: " + tenantSlug);
-        }
-
+        String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
         AuthResponseDTO response = authenticationService.login(userLoginDTO, tenantId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
