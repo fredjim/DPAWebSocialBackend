@@ -17,7 +17,7 @@ public class SectionMapper {
         sectionDTO.setUuid(section.getUuid());
         sectionDTO.setName(section.getName());
         sectionDTO.setPath(section.getPath());
-        sectionDTO.setDate(section.getDate());
+        sectionDTO.setDate(section.getCreatedDate());
         sectionDTO.setUser_id(section.getUsers().getUuid());
         sectionDTO.setInstitution_id(section.getInstitution().getUuid());
         sectionDTO.setNav_item_id(section.getNavItem() != null ? section.getNavItem().getUuid() : null);
