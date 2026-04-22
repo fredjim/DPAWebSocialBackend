@@ -34,9 +34,11 @@ public class SectionController {
         return sectionService.getAllSections(tenantId);
     }
 
-    @GetMapping(params = "name")  // This will match /api/v1/sections?name={name}
-    public SectionDTO getByName(@RequestParam String name) {
-        return sectionService.getSectionByName(name);
+    @GetMapping(params = "path")
+    public SectionDTO getByPath(
+            @RequestParam String path,
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+        return sectionService.getSectionByPath(path, tenantSlug);
     }
 
     @PostMapping
