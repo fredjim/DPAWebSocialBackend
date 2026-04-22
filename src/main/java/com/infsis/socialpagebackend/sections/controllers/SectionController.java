@@ -39,6 +39,13 @@ public class SectionController {
         return sectionService.getSectionByName(name);
     }
 
+    @GetMapping(params = "path")
+    public SectionDTO getByPath(
+            @RequestParam String path,
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+        return sectionService.getSectionByPath(path, tenantSlug);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SectionDTO create(@Valid @RequestBody SectionDTO sectionDTO) {

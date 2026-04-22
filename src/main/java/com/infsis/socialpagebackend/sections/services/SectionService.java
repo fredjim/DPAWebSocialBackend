@@ -1,6 +1,7 @@
 package com.infsis.socialpagebackend.sections.services;
 
 import com.infsis.socialpagebackend.multitenant.TenantContext;
+import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
@@ -41,6 +42,9 @@ public class SectionService {
     @Autowired
     private NavItemRepository navItemRepository;
 
+    @Autowired
+    private TenantResolver tenantResolver;
+
 
 
     public SectionDTO getSection(String sectionUuid) {
@@ -67,6 +71,18 @@ public class SectionService {
                 .findByName(name)
                 .map(section -> sectionMapper.toDTO(section))
                 .orElseThrow(() -> new NotFoundException("Section not found with name: ", name));
+    }
+
+    public SectionDTO getSectionByPath(String path, String tenantSlug) {
+        String tenantId = TenantContext.getCurrentTenant();
+        if (tenantId == null) {
+            tenantId = tenantResolver.resolveOrThrow(tenantSlug);
+        }
+
+        return sectionRepository
+                .findByInstitutionUuidAndPath(tenantId, path)
+                .map(sectionMapper::toDTO)
+                .orElseThrow(() -> new NotFoundException("Section not found with path: ", path));
     }
 
     public SectionDTO saveSection(SectionDTO sectionDTO) {
