@@ -10,6 +10,8 @@ import com.infsis.socialpagebackend.enums.CommentState;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
+import com.infsis.socialpagebackend.enums.FileCategory;
+import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.posts.clients.FacebookApiClient;
 import com.infsis.socialpagebackend.posts.dtos.*;
@@ -21,6 +23,8 @@ import com.infsis.socialpagebackend.reactions.models.EmojiType;
 import com.infsis.socialpagebackend.reactions.models.PostReaction;
 import com.infsis.socialpagebackend.reactions.repositories.EmojiTypeRepository;
 import com.infsis.socialpagebackend.reactions.repositories.PostReactionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -30,9 +34,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +47,10 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private static final String ANONYMOUS_USER = "anonymousUser";
+
+    private static final String VIDEOS_DIRECTORY    = System.getProperty("user.dir") + "/storage/institution/posts/videos/";
+    private static final String DOCUMENTS_DIRECTORY = System.getProperty("user.dir") + "/storage/institution/posts/documents/";
+    private static final String PHOTOS_DIRECTORY    = System.getProperty("user.dir") + "/storage/institution/posts/photos/";
 
     public enum GroupStatus {
         CREATED, SAVED, REMOVED, UPDATED
@@ -89,6 +100,12 @@ public class PostService {
 
     @Autowired
     private FacebookApiClient facebookApiClient;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public PostDTO getPost(String postUuid) {
         Post post = postRepository.findOneByUuid(postUuid);
@@ -186,11 +203,49 @@ public class PostService {
 
     }
 
+    @Transactional
     public PostDTO deletePost(String postUuid) {
         Post post = postRepository.findOneByUuid(postUuid);
-        post.setDeleted(true);
-        postRepository.save(post);
-        return postMapper.toDTO(post);
+        if (post == null || post.isDeleted()) {
+            throw new NotFoundException("Post", postUuid);
+        }
+
+        PostDTO dto = postMapper.toDTO(post);
+        Content content = post.getContent();
+        Integer postId = post.getId();
+
+        // 1. Delete physical files + UploadedFile records
+        if (content != null && content.getMedia() != null) {
+            content.getMedia().forEach(media -> {
+                if (media.getUploadedFile() != null) {
+                    try {
+                        fileStorageService.deleteFileOnly(
+                                media.getUploadedFile().getUuid(),
+                                resolveDirectory(media.getUploadedFile().getCategory()));
+                    } catch (Exception e) {
+                        log.warn("No se pudo eliminar archivo uuid={}: {}",
+                                media.getUploadedFile().getUuid(), e.getMessage());
+                    }
+                }
+            });
+        }
+
+        // 2. Detach Post from the persistence context.
+        //    Without this, when Content is deleted Hibernate tries to set post.content_id = NULL
+        //    before the DELETE, which violates the NOT NULL constraint.
+        entityManager.detach(post);
+
+        // 3. Delete Content — orphanRemoval cascades Media deletion; CascadeType.ALL cascades Text
+        if (content != null) {
+            contentRepository.delete(content);
+        }
+
+        // 4. Delete Post row via JPQL bulk delete (post is detached, bypasses entity lifecycle)
+        entityManager.createQuery("DELETE FROM Post p WHERE p.id = :id")
+                .setParameter("id", postId)
+                .executeUpdate();
+
+        return dto;
     }
     private List<Media> saveMedia(ContentDTO contentDTO, Content content){
         List<Media> medias = new ArrayList<>();
@@ -199,12 +254,29 @@ public class PostService {
                     .stream()
                     .map(media -> mediaMapper.getMedia(media, content))
                     .collect(Collectors.toList());
-
-            medias.stream().forEach(
-                    (media) -> mediaRepository.save(media)
-            );
+            medias.forEach(mediaRepository::save);
         }
         return medias;
+    }
+
+    private List<Media> saveMedia(List<MediaDTO> mediaDTOS, Content content) {
+        List<Media> medias = new ArrayList<>();
+        if (mediaDTOS != null) {
+            medias = mediaDTOS.stream()
+                    .map(dto -> mediaMapper.getMedia(dto, content))
+                    .collect(Collectors.toList());
+            medias.forEach(mediaRepository::save);
+        }
+        return medias;
+    }
+
+    private String resolveDirectory(FileCategory category) {
+        if (category == null) return PHOTOS_DIRECTORY;
+        return switch (category) {
+            case VIDEO    -> VIDEOS_DIRECTORY;
+            case DOCUMENT -> DOCUMENTS_DIRECTORY;
+            default       -> PHOTOS_DIRECTORY;
+        };
     }
 
     private Text saveText(ContentDTO contentDTO, Content content) {
@@ -322,48 +394,79 @@ public class PostService {
         return commentCounterDTO;
     }
 
-    /* Método para actualizar una publicación específica
-     */
+    @Transactional
     public PostDTO updatePost(String postUuid, PostDTO postDTO) {
-        // Buscamos la publicación en la base de datos utilizando su UUID
         Post existingPost = postRepository.findOneByUuid(postUuid);
-        if (existingPost == null || existingPost.isDeleted()) { // Si no existe, lanzamos una excepción personalizada
+        if (existingPost == null || existingPost.isDeleted()) {
             throw new NotFoundException("Post", postUuid);
         }
 
-
-        // Si el contenido está presente en el DTO, actualizamos el contenido asociado
         if (postDTO.getContent() != null) {
-            Content content = contentRepository.save(new Content());
+            Content content = existingPost.getContent();
 
-            List<Media> medias = saveMedia(postDTO.getContent(), content);
-            Text text = saveText(postDTO.getContent(), content);
+            if (postDTO.getContent().getMedia() != null) {
+                Set<String> uuidsConservados = postDTO.getContent().getMedia().stream()
+                        .map(MediaDTO::getUuid)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
 
-            content.setText(text);
-            content.setMedia(medias);
+                if (content.getMedia() != null) {
+                    List<Media> toDelete = content.getMedia().stream()
+                            .filter(m -> !uuidsConservados.contains(m.getUuid()))
+                            .collect(Collectors.toList());
 
-            content.setPost(existingPost);
+                    toDelete.forEach(media -> {
+                        if (media.getUploadedFile() != null) {
+                            try {
+                                fileStorageService.deleteFileOnly(
+                                        media.getUploadedFile().getUuid(),
+                                        resolveDirectory(media.getUploadedFile().getCategory()));
+                            } catch (Exception e) {
+                                log.warn("No se pudo eliminar archivo uuid={}: {}",
+                                        media.getUploadedFile().getUuid(), e.getMessage());
+                            }
+                        }
+                    });
+
+                    // Remover de la colección — orphanRemoval = true elimina las filas en BD
+                    // al llamar contentRepository.save(content). NO llamar mediaRepository.delete()
+                    // aquí porque dejaría las entidades en estado REMOVED dentro de la colección,
+                    // causando "deleted instance passed to merge" cuando el save hace cascade ALL.
+                    content.getMedia().removeAll(toDelete);
+                }
+
+                List<MediaDTO> nuevas = postDTO.getContent().getMedia().stream()
+                        .filter(m -> m.getUuid() == null)
+                        .collect(Collectors.toList());
+                saveMedia(nuevas, content);
+            }
+
+            if (postDTO.getContent().getText() != null) {
+                Text text = content.getText();
+                if (text == null) {
+                    saveText(postDTO.getContent(), content);
+                } else {
+                    text.setText(postDTO.getContent().getText());
+                    textRepository.save(text);
+                }
+            }
+
             contentRepository.save(content);
-
-            existingPost.setContent(content); // Asociamos el contenido actualizado a la publicación
         }
 
-        // Actualizamos la configuración de comentarios si se envía un nuevo valor
         if (postDTO.getComment_config_id() != null) {
             CommentConfig commentConfig = commentConfigRepository.findOneByUuid(postDTO.getComment_config_id());
             existingPost.setComment_conf(commentConfig);
         }
 
-        Institution institution = institutionRepository.findOneByUuid(postDTO.getInstitution_id());
+        if (postDTO.getInstitution_id() != null) {
+            Institution institution = institutionRepository.findOneByUuid(postDTO.getInstitution_id());
+            existingPost.setInstitution(institution);
+        }
 
         existingPost.setPost_date(postDTO.getDate());
-        existingPost.setInstitution(institution);
 
-        // Guardamos la publicación actualizada en la base de datos
-        Post updatedPost = postRepository.save(existingPost);
-
-        // Convertimos la publicación actualizada en un DTO para devolverla como respuesta
-        return postMapper.toDTO(updatedPost);
+        return postMapper.toDTO(postRepository.save(existingPost));
     }
 
     /* Método para buscar publicaciones por texto  */

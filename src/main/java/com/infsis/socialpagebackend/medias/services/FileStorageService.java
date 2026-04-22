@@ -9,6 +9,7 @@ import com.infsis.socialpagebackend.medias.mappers.UploadedFileMapper;
 import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
 import com.infsis.socialpagebackend.medias.storage.FileStorageStrategy;
+import com.infsis.socialpagebackend.posts.repositories.MediaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class FileStorageService {
     @Autowired
     @Qualifier("localFileStorage")
     private FileStorageStrategy fileStorageStrategy;
+
+    @Autowired
+    private MediaRepository mediaRepository;
 
     /**
      * Store a batch of files.
@@ -113,8 +117,8 @@ public class FileStorageService {
     }
 
     /**
-     * Delete a stored file from disk and from the database.
-     * FK ON DELETE SET NULL nullifies media.uploaded_file_id automatically.
+     * Delete a stored file from disk, its Media row, and the UploadedFile record.
+     * Used by the individual DELETE /images, /videos, /documents endpoints.
      */
     @Transactional
     public void deleteFile(String uuid, String directory) {
@@ -122,11 +126,33 @@ public class FileStorageService {
         UploadedFile file = uploadedFileRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("File", uuid));
         try {
+            mediaRepository.findByUploadedFileUuid(uuid)
+                    .ifPresent(mediaRepository::delete);
             fileStorageStrategy.deleteFile(uuid, directory);
             uploadedFileRepository.delete(file);
             logger.info("File deleted uuid={}", uuid);
         } catch (IOException e) {
             throw new FileStorageException("Error deleting file: " + uuid, e);
+        }
+    }
+
+    /**
+     * Delete only the physical file and the UploadedFile record.
+     * The caller is responsible for deleting the Media row separately.
+     * Used when deleting a Post, Article, or individual Media during update.
+     */
+    @Transactional
+    public void deleteFileOnly(String uuid, String directory) {
+        logger.info("Deleting file (only) uuid={}", uuid);
+        UploadedFile file = uploadedFileRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("File", uuid));
+        try {
+            fileStorageStrategy.deleteFile(uuid, directory);
+            uploadedFileRepository.delete(file);
+            logger.info("File (only) deleted uuid={}", uuid);
+        } catch (IOException e) {
+            logger.warn("Error deleting physical file uuid={}, removing DB record anyway", uuid);
+            uploadedFileRepository.delete(file);
         }
     }
 
