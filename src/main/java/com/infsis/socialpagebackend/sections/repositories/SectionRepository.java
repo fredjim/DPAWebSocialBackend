@@ -14,9 +14,6 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     @Query("SELECT s FROM Section s WHERE s.uuid = ?1")
     Section findOneByUuid(String uuid);
 
-    @Query("SELECT s FROM Section s WHERE s.name = ?1")
-    Optional<Section> findByName(String name);
-
     @Query("SELECT s FROM Section s WHERE s.navItem.uuid = ?1 AND s.deleted = false ORDER BY s.createdDate ASC")
     List<Section> findByNavItemUuid(String navItemUuid);
 

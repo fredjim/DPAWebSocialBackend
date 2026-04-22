@@ -66,13 +66,6 @@ public class SectionService {
                 .collect(Collectors.toList());
     }
 
-    public SectionDTO getSectionByName(String name) {
-        return sectionRepository
-                .findByName(name)
-                .map(section -> sectionMapper.toDTO(section))
-                .orElseThrow(() -> new NotFoundException("Section not found with name: ", name));
-    }
-
     public SectionDTO getSectionByPath(String path, String tenantSlug) {
         String tenantId = TenantContext.getCurrentTenant();
         if (tenantId == null) {
