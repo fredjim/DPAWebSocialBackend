@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,5 +23,11 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
 
     //Método para poder verificar si un usuario existe en nuestra base de datos
     Boolean existsByEmail(String email);
+
+    @Query("SELECT u FROM Users u JOIN u.roles r WHERE r.name = ?1")
+    List<Users> findAllByRoleName(String roleName);
+
+    @Query("SELECT u FROM Users u JOIN u.roles r WHERE u.uuid = ?1 AND r.name = ?2")
+    Optional<Users> findByUuidAndRoleName(String uuid, String roleName);
 }
 
