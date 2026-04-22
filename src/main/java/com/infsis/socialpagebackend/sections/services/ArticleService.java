@@ -3,6 +3,8 @@ package com.infsis.socialpagebackend.sections.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import com.infsis.socialpagebackend.enums.FileCategory;
+import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.posts.dtos.MediaDTO;
 import com.infsis.socialpagebackend.posts.mappers.MediaMapper;
@@ -28,11 +30,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class ArticleService {
+
+    private static final String VIDEOS_DIRECTORY    = System.getProperty("user.dir") + "/storage/institution/posts/videos/";
+    private static final String DOCUMENTS_DIRECTORY = System.getProperty("user.dir") + "/storage/institution/posts/documents/";
+    private static final String PHOTOS_DIRECTORY    = System.getProperty("user.dir") + "/storage/institution/posts/photos/";
 
     @Autowired
     private ArticleRepository articleRepository;
@@ -57,6 +65,9 @@ public class ArticleService {
 
     @Autowired
     private LinkRepository linkRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public ArticleDTO getArticle(String articleUuid) {
         Article article = articleRepository.findOneByUuid(articleUuid);
@@ -152,22 +163,28 @@ public class ArticleService {
             throw new NotFoundException("Article", articleUuid);
         }
 
-        article.setDeleted(true);
-        articleRepository.save(article);
+        ArticleDTO dto = articleMapper.toDTO(article);
 
-        if (article.getArticle_medias() != null && !article.getArticle_medias().isEmpty()) {
+        if (article.getArticle_medias() != null) {
             article.getArticle_medias().forEach(media -> {
-                media.setDeleted(true);
-                mediaRepository.save(media);
+                if (media.getUploadedFile() != null) {
+                    try {
+                        fileStorageService.deleteFileOnly(media.getUploadedFile().getUuid(), resolveDirectory(media.getUploadedFile().getCategory()));
+                    } catch (Exception e) {
+                        log.warn("No se pudo eliminar archivo uuid={}: {}", media.getUploadedFile().getUuid(), e.getMessage());
+                    }
+                }
             });
         }
 
         List<Link> links = linkRepository.findAllByOwnerTypeAndOwnerUuid(OwnerType.ARTICLE, articleUuid);
         if (links != null && !links.isEmpty()) {
-            links.forEach(link -> { link.setDeleted(true); linkRepository.save(link); });
+            linkRepository.deleteAll(links);
         }
 
-        return articleMapper.toDTO(article);
+        articleRepository.delete(article);
+
+        return dto;
     }
 
     private List<Media> saveMedia(List<MediaDTO> mediaDTOS, Article article) {
@@ -196,6 +213,7 @@ public class ArticleService {
         return links;
     }
 
+    @Transactional
     public ArticleDTO updateArticle(String articleUuid, ArticleDTO articleDTO) {
         Article foundArticle = articleRepository.findOneByUuid(articleUuid);
 
@@ -204,21 +222,36 @@ public class ArticleService {
         }
 
         if (articleDTO.getMedias() != null) {
-            if (foundArticle.getArticle_medias() != null && !foundArticle.getArticle_medias().isEmpty()) {
+            Set<String> uuidsConservados = articleDTO.getMedias().stream()
+                    .map(MediaDTO::getUuid)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            if (foundArticle.getArticle_medias() != null) {
                 foundArticle.getArticle_medias().forEach(media -> {
-                    media.setDeleted(true);
-                    mediaRepository.save(media);
+                    if (!uuidsConservados.contains(media.getUuid())) {
+                        if (media.getUploadedFile() != null) {
+                            try {
+                                fileStorageService.deleteFileOnly(media.getUploadedFile().getUuid(), resolveDirectory(media.getUploadedFile().getCategory()));
+                            } catch (Exception e) {
+                                log.warn("No se pudo eliminar archivo uuid={}: {}", media.getUploadedFile().getUuid(), e.getMessage());
+                            }
+                        }
+                        mediaRepository.delete(media);
+                    }
                 });
             }
 
-            List<Media> newMedias = saveMedia(articleDTO.getMedias(), foundArticle);
-            foundArticle.setArticle_medias(newMedias);
+            List<MediaDTO> nuevas = articleDTO.getMedias().stream()
+                    .filter(m -> m.getUuid() == null)
+                    .collect(Collectors.toList());
+            saveMedia(nuevas, foundArticle);
         }
 
         if (articleDTO.getLinks() != null) {
             List<Link> oldLinks = linkRepository.findAllByOwnerTypeAndOwnerUuid(OwnerType.ARTICLE, foundArticle.getUuid());
-            if (oldLinks != null) {
-                oldLinks.forEach(link -> { link.setDeleted(true); linkRepository.save(link); });
+            if (oldLinks != null && !oldLinks.isEmpty()) {
+                linkRepository.deleteAll(oldLinks);
             }
             saveLinks(articleDTO.getLinks(), foundArticle.getUuid());
         }
@@ -232,8 +265,15 @@ public class ArticleService {
         foundArticle.setTitle(articleDTO.getTitle());
         foundArticle.setText(articleDTO.getText());
 
-        Article updatedArticle = articleRepository.save(foundArticle);
+        return articleMapper.toDTO(articleRepository.save(foundArticle));
+    }
 
-        return articleMapper.toDTO(updatedArticle);
+    private String resolveDirectory(FileCategory category) {
+        if (category == null) return PHOTOS_DIRECTORY;
+        return switch (category) {
+            case VIDEO    -> VIDEOS_DIRECTORY;
+            case DOCUMENT -> DOCUMENTS_DIRECTORY;
+            default       -> PHOTOS_DIRECTORY;
+        };
     }
 }

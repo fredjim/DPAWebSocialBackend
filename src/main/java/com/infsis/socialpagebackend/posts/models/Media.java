@@ -4,8 +4,6 @@ import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.sections.models.Article;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,8 +15,6 @@ import java.util.UUID;
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE media SET deleted = true WHERE id=?")
-@SQLRestriction("deleted = false")
 @Table(name = "media")
 public class Media {
 
