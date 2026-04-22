@@ -4,8 +4,10 @@ import com.infsis.socialpagebackend.social_networks.models.SocialNetwork;
 import com.infsis.socialpagebackend.posts.models.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -89,7 +91,8 @@ public class Institution {
     @Column
     private Integer maxUsers = 100;
 
-    @Column(columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String settings = "{}";
 
     public Institution() {}
