@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -98,6 +99,7 @@ public class AuthenticationController {
     }
 
     //Método para poder guardar usuarios de tipo ADMIN
+    @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
     @PostMapping("/auth/register-adm")
     public ResponseEntity<Map<String, Object>> registrarAdmin(@RequestBody UserRegistryDTO userRegistryDTO) {
 
@@ -132,6 +134,7 @@ public class AuthenticationController {
     }
 
     //Método para poder guardar usuarios de tipo MODERATOR
+    @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
     @PostMapping("/auth/register-moderator")
     public ResponseEntity<Map<String, Object>> registrarModerator(@RequestBody UserRegistryDTO userRegistryDTO) {
         Map<String, Object> response = new HashMap<>();
@@ -203,5 +206,30 @@ public class AuthenticationController {
     @PutMapping("/v1/users/me")
     public UserDetailDTO updateUserProfile(@Valid @RequestBody UserDetailDTO userDetailDTO) {
         return authenticationService.updateUserProfile(userDetailDTO);
+    }
+
+    // ─── Admin user management — ROOT only ───────────────────────────────────
+
+    @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
+    @GetMapping("/v1/users/admin")
+    public ResponseEntity<java.util.List<UserDetailDTO>> getAdminUsers() {
+        return new ResponseEntity<>(authenticationService.getAdminUsers(), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
+    @PutMapping("/v1/users/admin/{uuid}")
+    public ResponseEntity<UserDetailDTO> updateAdminUser(
+            @PathVariable String uuid,
+            @Valid @RequestBody UserDetailDTO userDetailDTO) {
+        return new ResponseEntity<>(authenticationService.updateAdminUser(uuid, userDetailDTO), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
+    @DeleteMapping("/v1/users/admin/{uuid}")
+    public ResponseEntity<Map<String, Object>> deleteAdminUser(@PathVariable String uuid) {
+        authenticationService.deleteAdminUser(uuid);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Admin user deleted successfully");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

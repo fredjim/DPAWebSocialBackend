@@ -56,6 +56,9 @@ public class InstitutionService {
     }
 
     public InstitutionDTO saveInstitution(InstitutionDTO institutionDTO) {
+        if (institutionRepository.findBySlug(institutionDTO.getSlug()).isPresent()) {
+            throw new IllegalArgumentException("El slug '" + institutionDTO.getSlug() + "' ya está en uso por otra institución.");
+        }
 
         Institution institution = institutionMapper.getInstitution(institutionDTO);
         institutionRepository.save(institution);
@@ -67,6 +70,15 @@ public class InstitutionService {
         Optional<Institution> optionalInstitution = findInstitution(institutionDTO.getUuid());
 
         Institution institution = optionalInstitution.get();
+
+        if (institutionDTO.getSlug() != null) {
+            institutionRepository.findBySlug(institutionDTO.getSlug())
+                    .filter(existing -> !existing.getUuid().equals(institution.getUuid()))
+                    .ifPresent(existing -> {
+                        throw new IllegalArgumentException("El slug '" + institutionDTO.getSlug() + "' ya está en uso por otra institución.");
+                    });
+            institution.setSlug(institutionDTO.getSlug());
+        }
 
         institution.setName(institutionDTO.getName());
         institution.setDescription(institutionDTO.getDescription());
@@ -101,37 +113,6 @@ public class InstitutionService {
         return optionalInstitution;
     }
 
-    /*
-    public InstitutionDTO saveProfileImage(String institutionUuid, List<MultipartFile> image) throws IOException {
-        Optional<Institution> optionalInstitution = findInstitution(institutionUuid);
-
-        ImageFileDTO file = saveImage(image, INST_PROFILE_PHOTO_DIR, IMAGES_INSTITUTION_PROFILE_PATH);
-
-        Institution institution = optionalInstitution.get();
-        institution.setLogo_url(file.getUrlResource());
-
-        institutionRepository.save(institution);
-        return institutionMapper.toDTO(institution);
-    }
-
-    public InstitutionDTO saveCoverImage(String institutionUuid, List<MultipartFile> image) throws IOException {
-
-        Optional<Institution> optionalInstitution = findInstitution(institutionUuid);
-
-        ImageFileDTO file = saveImage(image, INST_COVER_DIR, IMAGES_INSTITUTION_COVER_PATH);
-
-        Institution institution = optionalInstitution.get();
-        institution.setBackground_url(file.getUrlResource());
-
-        institutionRepository.save(institution);
-        return institutionMapper.toDTO(institution);
-    }
-
-    private ImageFileDTO saveImage(List<MultipartFile> image, String imageDirectory, String imageRoute) throws IOException {
-        List<ImageFileDTO> fileItemDTO = imageStorageService.storeImages(image, imageDirectory, imageRoute);
-        return fileItemDTO.get(0);
-    }
-     */
     public List<MediaItemDTO> getMediasInstitution(String institutionUuid, String type) {
         List<Post> posts = postRepository.findAll();
         List<MediaItemDTO> mediaItems = new ArrayList<>();

@@ -23,6 +23,7 @@ public class UserMapper {
         userDetailDTO.setPhone(user.getPhone());
         userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhoto_profile_path()));
         userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhoto_cover_path()));
+        userDetailDTO.setInstitutionId(user.getInstitutionId());
 
         return userDetailDTO;
     }

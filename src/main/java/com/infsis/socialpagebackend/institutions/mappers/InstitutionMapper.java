@@ -15,6 +15,7 @@ public class InstitutionMapper {
     public InstitutionDTO toDTO(Institution institution) {
         InstitutionDTO institutionDTO = new InstitutionDTO();
         institutionDTO.setUuid(institution.getUuid());
+        institutionDTO.setSlug(institution.getSlug());
         institutionDTO.setName(institution.getName());
         institutionDTO.setDescription(institution.getDescription());
         institutionDTO.setLocation(institution.getLocation());
@@ -30,6 +31,7 @@ public class InstitutionMapper {
     public Institution getInstitution(InstitutionDTO institutionDTO) {
         Institution institution = new Institution();
         institution.setUuid(institutionDTO.getUuid());
+        institution.setSlug(institutionDTO.getSlug());
         institution.setName(institutionDTO.getName());
         institution.setDescription(institutionDTO.getDescription());
         institution.setLocation(institutionDTO.getLocation());

@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -25,19 +26,22 @@ public class AuthenticationService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthenticationService(
             UserRepository userRepository,
             TokenRepository tokenRepository,
             UserMapper userMapper,
             AuthenticationManager authenticationManager,
-            JwtGenerator jwtGenerator
+            JwtGenerator jwtGenerator,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDetailDTO updateUserProfile(UserDetailDTO userDetailDTO) {
@@ -211,12 +215,50 @@ public class AuthenticationService {
     }
 
     private void updateUserFields(Users user, UserDetailDTO dto) {
-        user.setEmail(dto.getEmail());
-        user.setName(dto.getName() != null ? dto.getName() : user.getEmail());
-        user.setLastName(dto.getLastName() != null ? dto.getLastName() : user.getLastName());
-        user.setPassword(dto.getPassword() != null ? dto.getPassword() : user.getPassword());
-        user.setPhone(dto.getPhone() != null ? dto.getPhone() : user.getPhone());
-        user.setPhoto_profile_path(dto.getPhoto_profile_path() != null ? dto.getPhoto_profile_path() : user.getPhoto_profile_path());
-        user.setPhoto_cover_path(dto.getPhoto_cover_path() != null ? dto.getPhoto_cover_path() : user.getPhoto_cover_path());
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if (dto.getName() != null) user.setName(dto.getName());
+        if (dto.getLastName() != null) user.setLastName(dto.getLastName());
+        if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPhone() != null) user.setPhone(dto.getPhone());
+        if (dto.getPhoto_profile_path() != null) user.setPhoto_profile_path(dto.getPhoto_profile_path());
+        if (dto.getPhoto_cover_path() != null) user.setPhoto_cover_path(dto.getPhoto_cover_path());
+    }
+
+    // ─── Admin user management (ROOT only) ───────────────────────────────────
+
+    public List<UserDetailDTO> getAdminUsers() {
+        return userRepository.findAllByRoleName("ADMIN")
+                .stream()
+                .map(u -> {
+                    UserDetailDTO dto = userMapper.toDTO(u);
+                    dto.setRole("ADMIN");
+                    return dto;
+                })
+                .toList();
+    }
+
+    public UserDetailDTO updateAdminUser(String uuid, UserDetailDTO dto) {
+        Users admin = userRepository.findByUuidAndRoleName(uuid, "ADMIN")
+                .orElseThrow(() -> new NotFoundException("Admin user", uuid));
+        updateAdminFields(admin, dto);
+        userRepository.save(admin);
+        UserDetailDTO result = userMapper.toDTO(admin);
+        result.setRole("ADMIN");
+        return result;
+    }
+
+    public void deleteAdminUser(String uuid) {
+        Users admin = userRepository.findByUuidAndRoleName(uuid, "ADMIN")
+                .orElseThrow(() -> new NotFoundException("Admin user", uuid));
+        userRepository.delete(admin);
+    }
+
+    private void updateAdminFields(Users user, UserDetailDTO dto) {
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if (dto.getName() != null) user.setName(dto.getName());
+        if (dto.getLastName() != null) user.setLastName(dto.getLastName());
+        if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPhone() != null) user.setPhone(dto.getPhone());
+        if (dto.getInstitutionId() != null) user.setInstitutionId(dto.getInstitutionId());
     }
 }

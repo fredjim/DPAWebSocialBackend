@@ -32,4 +32,6 @@ public class UserDetailDTO {
     private String photo_cover_path;
 
     private String role;
+
+    private String institutionId;
 }
