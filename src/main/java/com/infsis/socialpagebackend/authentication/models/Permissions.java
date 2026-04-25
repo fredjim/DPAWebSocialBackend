@@ -19,4 +19,6 @@ public class Permissions {
 
     private String namePermission;
 
+    @Column(name = "is_system_only", nullable = false)
+    private boolean isSystemOnly = false;
 }

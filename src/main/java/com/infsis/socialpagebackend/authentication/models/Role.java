@@ -14,9 +14,13 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_role")
     private Long idRole;
+
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Column(name = "is_system_role", nullable = false)
+    private boolean isSystemRole = false;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "rol_permissions",
             joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id_role"),
