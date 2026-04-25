@@ -26,9 +26,8 @@ ON CONFLICT DO NOTHING;
 --    create, modify, or delete institutions.
 --      id=1  VIEW_ALL_INSTITUTIONS
 --      id=2  CREATE_INSTITUTION
---      id=3  UPDATE_INSTITUTION
 --      id=4  DELETE_INSTITUTION
 -- ─────────────────────────────────────────────────────────────
 DELETE FROM public.rol_permissions
 WHERE role_id = 2
-  AND permission_id IN (1, 2, 3, 4);
+  AND permission_id IN (1, 2, 4);
