@@ -14,6 +14,7 @@ import com.infsis.socialpagebackend.enums.FileCategory;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.posts.clients.FacebookApiClient;
+import com.infsis.socialpagebackend.social_networks.services.InstitutionFacebookConfigService;
 import com.infsis.socialpagebackend.posts.dtos.*;
 import com.infsis.socialpagebackend.posts.mappers.MediaMapper;
 import com.infsis.socialpagebackend.posts.mappers.PostMapper;
@@ -35,6 +36,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -102,6 +105,9 @@ public class PostService {
     private FacebookApiClient facebookApiClient;
 
     @Autowired
+    private InstitutionFacebookConfigService facebookConfigService;
+
+    @Autowired
     private FileStorageService fileStorageService;
 
     @PersistenceContext
@@ -166,12 +172,13 @@ public class PostService {
 
         Post post = new Post();
         PostDTO resDTO = new PostDTO();
+        List<Media> savedMedias = new ArrayList<>();
         if (commentConfig != null && institution != null & user != null) {
-            List<Media> medias = saveMedia(postDTO.getContent(), content);
+            savedMedias = saveMedia(postDTO.getContent(), content);
             Text text = saveText(postDTO.getContent(), content);
 
             content.setText(text);
-            content.setMedia(medias);
+            content.setMedia(savedMedias);
 
             post = postMapper.getPost(postDTO, content, commentConfig, institution, user);
             postRepository.save(post);
@@ -184,8 +191,16 @@ public class PostService {
         }
 
         // Publish in Facebook
-        if(postDTO.getFb_post_enable()) {
-            facebookApiClient.postPublication(postDTO);
+        if (Boolean.TRUE.equals(postDTO.getFb_post_enable())) {
+            String institutionId = TenantContext.getCurrentTenant();
+            final List<Media> mediasForFb = savedMedias;
+            facebookConfigService.getActiveConfig(institutionId).ifPresentOrElse(
+                config -> publishToFacebook(
+                        postDTO, mediasForFb, config.getPageId(),
+                        facebookConfigService.decryptToken(config)),
+                () -> log.warn("Post {} marcado para Facebook pero la institución {} no tiene configuración activa.",
+                    postDTO.getUuid(), institutionId)
+            );
         }
 
         return resDTO;
@@ -247,6 +262,100 @@ public class PostService {
 
         return dto;
     }
+    private void publishToFacebook(PostDTO postDTO, List<Media> savedMedias,
+                                   String pageId, String accessToken) {
+        List<Media> images = savedMedias.stream()
+                .filter(m -> m.getUploadedFile() != null &&
+                             m.getUploadedFile().getCategory() == FileCategory.IMAGE)
+                .collect(Collectors.toList());
+
+        List<Media> videos = savedMedias.stream()
+                .filter(m -> m.getUploadedFile() != null &&
+                             m.getUploadedFile().getCategory() == FileCategory.VIDEO)
+                .collect(Collectors.toList());
+
+        List<String> documentUrls = savedMedias.stream()
+                .filter(m -> m.getUploadedFile() != null &&
+                             m.getUploadedFile().getCategory() == FileCategory.DOCUMENT)
+                .map(m -> appUrlProperties.buildResourceUrl(m.getUploadedFile().getUrlResource()))
+                .collect(Collectors.toList());
+
+        if (!videos.isEmpty()) {
+            if (videos.size() > 1) {
+                log.warn("Facebook solo soporta un video por post, se publicará solo el primero.");
+            }
+            if (!images.isEmpty()) {
+                log.warn("Post contiene imágenes y video; Facebook no soporta medios mixtos, se publicará solo el video.");
+            }
+            Media video = videos.get(0);
+            Path videoPath = Paths.get(VIDEOS_DIRECTORY, video.getUploadedFile().getUuid());
+            String description = appendDocumentLinks(postDTO.getContent().getText(), documentUrls);
+            facebookApiClient.postVideo(videoPath, video.getUploadedFile().getMimeType(),
+                    video.getUploadedFile().getName(), description, pageId, accessToken);
+            return;
+        }
+
+        if (!images.isEmpty()) {
+            uploadImagesToFacebook(postDTO.getContent().getMedia(), savedMedias, pageId, accessToken);
+            // link y attached_media no se pueden combinar: se añaden URLs de docs al mensaje
+            String message = appendDocumentLinks(postDTO.getContent().getText(), documentUrls);
+            facebookApiClient.postPublication(postDTO, message, null, pageId, accessToken);
+            return;
+        }
+
+        if (!documentUrls.isEmpty()) {
+            String message = appendDocumentLinks(postDTO.getContent().getText(), documentUrls);
+            facebookApiClient.postPublication(postDTO, message, null, pageId, accessToken);
+            return;
+        }
+
+        facebookApiClient.postPublication(postDTO, pageId, accessToken);
+    }
+
+    private String appendDocumentLinks(String text, List<String> urls) {
+        if (urls.isEmpty()) return text != null ? text : "";
+        StringBuilder sb = new StringBuilder(text != null ? text : "");
+        for (String url : urls) {
+            sb.append("\n").append(url);
+        }
+        return sb.toString();
+    }
+
+    private void uploadImagesToFacebook(List<MediaDTO> requestMedias, List<Media> savedMedias,
+                                        String pageId, String accessToken) {
+        List<Path> imagePaths = new ArrayList<>();
+        List<String> mimeTypes = new ArrayList<>();
+        List<String> originalFilenames = new ArrayList<>();
+        List<MediaDTO> imageDTOs = new ArrayList<>();
+
+        for (MediaDTO dto : requestMedias) {
+            if (dto.getUploaded_file_uuid() == null) continue;
+            savedMedias.stream()
+                .filter(m -> m.getUploadedFile() != null &&
+                             m.getUploadedFile().getUuid().equals(dto.getUploaded_file_uuid()))
+                .findFirst()
+                .ifPresent(media -> {
+                    FileCategory category = media.getUploadedFile().getCategory();
+                    if (category == FileCategory.IMAGE) {
+                        imagePaths.add(Paths.get(PHOTOS_DIRECTORY, media.getUploadedFile().getUuid()));
+                        mimeTypes.add(media.getUploadedFile().getMimeType());
+                        originalFilenames.add(media.getUploadedFile().getName());
+                        imageDTOs.add(dto);
+                    } else if (category == FileCategory.VIDEO) {
+                        log.warn("Subida de video a Facebook no soportada aún, se omite uuid={}.",
+                                dto.getUploaded_file_uuid());
+                    }
+                });
+        }
+
+        if (imagePaths.isEmpty()) return;
+
+        List<String> fbPhotoIds = facebookApiClient.postLinkImages(imagePaths, mimeTypes, originalFilenames, pageId, accessToken);
+        for (int i = 0; i < imageDTOs.size() && i < fbPhotoIds.size(); i++) {
+            imageDTOs.get(i).setFb_media_id(fbPhotoIds.get(i));
+        }
+    }
+
     private List<Media> saveMedia(ContentDTO contentDTO, Content content){
         List<Media> medias = new ArrayList<>();
         if(contentDTO.getMedia() != null ) {
