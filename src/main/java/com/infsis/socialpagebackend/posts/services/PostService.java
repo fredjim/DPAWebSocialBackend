@@ -304,11 +304,8 @@ public class PostService {
         }
 
         if (!documentUrls.isEmpty()) {
-            // Primer doc como link preview; los extra van en el mensaje
-            String link = documentUrls.get(0);
-            List<String> extraDocs = documentUrls.subList(1, documentUrls.size());
-            String message = appendDocumentLinks(postDTO.getContent().getText(), extraDocs);
-            facebookApiClient.postPublication(postDTO, message, link, pageId, accessToken);
+            String message = appendDocumentLinks(postDTO.getContent().getText(), documentUrls);
+            facebookApiClient.postPublication(postDTO, message, null, pageId, accessToken);
             return;
         }
 
