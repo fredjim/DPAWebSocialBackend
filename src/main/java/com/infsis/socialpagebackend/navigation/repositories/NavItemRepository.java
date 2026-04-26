@@ -2,8 +2,10 @@ package com.infsis.socialpagebackend.navigation.repositories;
 
 import com.infsis.socialpagebackend.navigation.models.NavItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,5 +26,10 @@ public interface NavItemRepository extends JpaRepository<NavItem, Integer> {
 
     @Query("SELECT COUNT(n) > 0 FROM NavItem n WHERE n.institution.uuid = ?1 AND n.path = ?2 AND n.uuid <> ?3 AND n.deleted = false")
     boolean existsByInstitutionUuidAndPathAndUuidNot(String institutionUuid, String path, String uuid);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "DELETE FROM nav_item WHERE uuid = ?1")
+    void hardDeleteByUuid(String uuid);
 }
 
