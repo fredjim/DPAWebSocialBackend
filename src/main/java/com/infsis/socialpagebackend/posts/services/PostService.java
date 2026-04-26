@@ -14,6 +14,7 @@ import com.infsis.socialpagebackend.enums.FileCategory;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.posts.clients.FacebookApiClient;
+import com.infsis.socialpagebackend.social_networks.services.InstitutionFacebookConfigService;
 import com.infsis.socialpagebackend.posts.dtos.*;
 import com.infsis.socialpagebackend.posts.mappers.MediaMapper;
 import com.infsis.socialpagebackend.posts.mappers.PostMapper;
@@ -102,6 +103,9 @@ public class PostService {
     private FacebookApiClient facebookApiClient;
 
     @Autowired
+    private InstitutionFacebookConfigService facebookConfigService;
+
+    @Autowired
     private FileStorageService fileStorageService;
 
     @PersistenceContext
@@ -184,8 +188,17 @@ public class PostService {
         }
 
         // Publish in Facebook
-        if(postDTO.getFb_post_enable()) {
-            facebookApiClient.postPublication(postDTO);
+        if (Boolean.TRUE.equals(postDTO.getFb_post_enable())) {
+            String institutionId = TenantContext.getCurrentTenant();
+            facebookConfigService.getActiveConfig(institutionId).ifPresentOrElse(
+                config -> facebookApiClient.postPublication(
+                    postDTO,
+                    config.getPageId(),
+                    facebookConfigService.decryptToken(config)
+                ),
+                () -> log.warn("Post {} marcado para Facebook pero la institución {} no tiene configuración activa.",
+                    postDTO.getUuid(), institutionId)
+            );
         }
 
         return resDTO;

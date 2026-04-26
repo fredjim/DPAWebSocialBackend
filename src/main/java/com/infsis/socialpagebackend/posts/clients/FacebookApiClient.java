@@ -1,16 +1,12 @@
 package com.infsis.socialpagebackend.posts.clients;
 
-import com.infsis.socialpagebackend.configuration.RequestLoggingInterceptor;
 import com.infsis.socialpagebackend.posts.dtos.FacebookPhotoResponseDTO;
 import com.infsis.socialpagebackend.posts.dtos.MediaDTO;
 import com.infsis.socialpagebackend.posts.dtos.PostDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,52 +18,46 @@ import java.util.List;
 @Service
 public class FacebookApiClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingInterceptor.class);
-
-    private final RestTemplate restTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(FacebookApiClient.class);
 
     @Value("${meta.graph-api.url}")
     private String graphApiUrl;
 
-    @Value("${meta.graph-api.page-id}")
-    private String graphApiPageId;
-
-    @Value("${meta.graph-api.page-access-token}")
-    private String graphApiPageAccessToken;
+    private final RestTemplate restTemplate;
 
     public FacebookApiClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public void postPublication(PostDTO postDTO) {
-
-        //String url = String.format("%s/feed?access_token=%s&appid=%s", graphApiUrl, graphApiPageAccessToken, graphApiPageAccessToken);
-        if (!postDTO.getIs_fb_posted()) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("access_token", graphApiPageAccessToken);
-            params.add("message", postDTO.getContent().getText());
-
-            int i = 0;
-            for (MediaDTO media : postDTO.getContent().getMedia()) {
-                params.add("attached_media[" + i + "]", "{'media_fbid':'" + media.getFb_media_id() + "'}");
-                i++;
-            }
-
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(graphApiUrl + "/" + graphApiPageId + "/feed", request, String.class);
-
-            logger.info("Successful Post in Facebook, Response Status: {} | Response Boddy : {}", response.getStatusCode(), response.getBody());
-        } else {
-            logger.info("The post with ID: {} was already published in Facebook.", postDTO.getUuid());
+    public void postPublication(PostDTO postDTO, String pageId, String accessToken) {
+        if (Boolean.TRUE.equals(postDTO.getIs_fb_posted())) {
+            logger.info("Post {} ya fue publicado en Facebook, se omite.", postDTO.getUuid());
+            return;
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("access_token", accessToken);
+        params.add("message", postDTO.getContent().getText());
+
+        int i = 0;
+        for (MediaDTO media : postDTO.getContent().getMedia()) {
+            params.add("attached_media[" + i + "]",
+                    "{'media_fbid':'" + media.getFb_media_id() + "'}");
+            i++;
+        }
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                graphApiUrl + "/" + pageId + "/feed", request, String.class);
+
+        logger.info("Post publicado en Facebook. Status: {} | Body: {}",
+                response.getStatusCode(), response.getBody());
     }
 
-    //Publish link images in Facebook
-    private List<String> postLinkImages(List<MediaDTO> photos) {
-
+    public List<String> postLinkImages(List<MediaDTO> photos, String pageId, String accessToken) {
         List<String> postedImages = new ArrayList<>();
 
         HttpHeaders headers = new HttpHeaders();
@@ -75,16 +65,18 @@ public class FacebookApiClient {
 
         for (MediaDTO mediaDTO : photos) {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("access_token", graphApiPageAccessToken);
+            params.add("access_token", accessToken);
             params.add("published", "false");
             params.add("url", mediaDTO.getPath());
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             ResponseEntity<FacebookPhotoResponseDTO> response = restTemplate.postForEntity(
-                    graphApiUrl + "/" + graphApiPageId + "/photos", request , FacebookPhotoResponseDTO.class);
+                    graphApiUrl + "/" + pageId + "/photos", request, FacebookPhotoResponseDTO.class);
 
-            postedImages.add(response.getBody().getId() != null ? response.getBody().getId() : "");
-            logger.info("Successful posted photo in Facebook, Response Status: {} | Response Body : {}", response.getStatusCode(), response.getBody() );
+            String photoId = response.getBody() != null ? response.getBody().getId() : "";
+            postedImages.add(photoId != null ? photoId : "");
+            logger.info("Imagen subida a Facebook. Status: {} | Photo ID: {}",
+                    response.getStatusCode(), photoId);
         }
 
         return postedImages;
