@@ -228,7 +228,7 @@ public class ArticleService {
                     .collect(Collectors.toSet());
 
             if (foundArticle.getArticle_medias() != null) {
-                foundArticle.getArticle_medias().forEach(media -> {
+                new ArrayList<>(foundArticle.getArticle_medias()).forEach(media -> {
                     if (!uuidsConservados.contains(media.getUuid())) {
                         if (media.getUploadedFile() != null) {
                             try {
@@ -265,7 +265,8 @@ public class ArticleService {
         foundArticle.setTitle(articleDTO.getTitle());
         foundArticle.setText(articleDTO.getText());
 
-        return articleMapper.toDTO(articleRepository.save(foundArticle));
+        articleRepository.saveAndFlush(foundArticle);
+        return articleMapper.toDTO(articleRepository.findOneByUuid(articleUuid));
     }
 
     private String resolveDirectory(FileCategory category) {

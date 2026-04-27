@@ -16,10 +16,10 @@ public class ArticleDTO {
     private String uuid;
 
     @NotBlank
-    @Size(min = 36, max = 40)
+    @Size(min = 30, max = 40)
     private String section_id;
 
-   @Size(min = 36, max = 40)
+   @Size(min = 30, max = 40)
     private String user_id;
 
     @NotNull
