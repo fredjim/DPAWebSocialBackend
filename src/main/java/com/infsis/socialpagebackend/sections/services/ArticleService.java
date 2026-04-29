@@ -220,68 +220,6 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleDTO update_Article(String articleUuid, ArticleDTO articleDTO) {
-        Article foundArticle = articleRepository.findOneByUuid(articleUuid);
-
-        if (foundArticle == null || foundArticle.isDeleted()) {
-            throw new NotFoundException("Article", articleUuid);
-        }
-
-        if (articleDTO.getMedias() != null) {
-            Set<String> uuidsConservados = articleDTO.getMedias().stream()
-                    .map(MediaDTO::getUuid)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            Set<String> uploadedFileUuidsReutilizados = articleDTO.getMedias().stream()
-                    .filter(m -> m.getUuid() == null && m.getUploaded_file_uuid() != null)
-                    .map(MediaDTO::getUploaded_file_uuid)
-                    .collect(Collectors.toSet());
-
-            if (foundArticle.getArticle_medias() != null) {
-                new ArrayList<>(foundArticle.getArticle_medias()).forEach(media -> {
-                    if (!uuidsConservados.contains(media.getUuid())) {
-                        if (media.getUploadedFile() != null && !uploadedFileUuidsReutilizados.contains(media.getUploadedFile().getUuid())) {
-                            try {
-                                fileStorageService.deleteFileOnly(media.getUploadedFile().getUuid(), resolveDirectory(media.getUploadedFile().getCategory()));
-                            } catch (Exception e) {
-                                log.warn("No se pudo eliminar archivo uuid={}: {}", media.getUploadedFile().getUuid(), e.getMessage());
-                            }
-                        }
-                        mediaRepository.delete(media);
-                    }
-                });
-            }
-
-            List<MediaDTO> nuevas = articleDTO.getMedias().stream()
-                    .filter(m -> m.getUuid() == null)
-                    .collect(Collectors.toList());
-            saveMedia(nuevas, foundArticle);
-        }
-
-        if (articleDTO.getLinks() != null) {
-            List<Link> oldLinks = linkRepository.findAllByOwnerTypeAndOwnerUuid(OwnerType.ARTICLE, foundArticle.getUuid());
-            if (oldLinks != null && !oldLinks.isEmpty()) {
-                linkRepository.deleteAll(oldLinks);
-            }
-            saveLinks(articleDTO.getLinks(), foundArticle.getUuid());
-        }
-
-        if (articleDTO.getSection_id() != null) {
-            Section section = sectionRepository.findOneByUuid(articleDTO.getSection_id());
-            foundArticle.setSection(section);
-        }
-
-        foundArticle.setDate(articleDTO.getDate());
-        foundArticle.setTitle(articleDTO.getTitle());
-        foundArticle.setText(articleDTO.getText());
-
-        articleRepository.saveAndFlush(foundArticle);
-        entityManager.clear();
-        return articleMapper.toDTO(articleRepository.findOneByUuid(articleUuid));
-    }
-
-    @Transactional
     public ArticleDTO updateArticle(String articleUuid, ArticleDTO articleDTO) {
         Article foundArticle = articleRepository.findOneByUuid(articleUuid);
         
@@ -362,7 +300,7 @@ public class ArticleService {
         articleRepository.saveAndFlush(foundArticle);
         entityManager.clear();
         return articleMapper.toDTO(articleRepository.findOneByUuid(articleUuid));
-        // Resto del código...
+
     }
     private String resolveDirectory(FileCategory category) {
         if (category == null) return PHOTOS_DIRECTORY;
