@@ -4,6 +4,7 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.enums.FileCategory;
+import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.sections.dtos.ArticleDTO;
 import com.infsis.socialpagebackend.posts.dtos.MediaDTO;
@@ -21,6 +22,8 @@ import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.sections.repositories.ArticleRepository;
 import com.infsis.socialpagebackend.sections.repositories.LinkRepository;
 import com.infsis.socialpagebackend.sections.repositories.SectionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -68,6 +71,9 @@ public class ArticleService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ArticleDTO getArticle(String articleUuid) {
         Article article = articleRepository.findOneByUuid(articleUuid);
@@ -216,39 +222,65 @@ public class ArticleService {
     @Transactional
     public ArticleDTO updateArticle(String articleUuid, ArticleDTO articleDTO) {
         Article foundArticle = articleRepository.findOneByUuid(articleUuid);
-
+        
         if (foundArticle == null || foundArticle.isDeleted()) {
             throw new NotFoundException("Article", articleUuid);
         }
-
+        
         if (articleDTO.getMedias() != null) {
             Set<String> uuidsConservados = articleDTO.getMedias().stream()
                     .map(MediaDTO::getUuid)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
-
+            
+            Set<String> uploadedFileUuidsReutilizados = articleDTO.getMedias().stream()
+                    .filter(m -> m.getUuid() == null && m.getUploaded_file_uuid() != null)
+                    .map(MediaDTO::getUploaded_file_uuid)
+                    .collect(Collectors.toSet());
+            
             if (foundArticle.getArticle_medias() != null) {
-                foundArticle.getArticle_medias().forEach(media -> {
+                // Primero, recolectar los archivos a eliminar
+                List<Media> mediasToDelete = new ArrayList<>();
+                List<UploadedFile> filesToDelete = new ArrayList<>();
+                
+                for (Media media : foundArticle.getArticle_medias()) {
                     if (!uuidsConservados.contains(media.getUuid())) {
-                        if (media.getUploadedFile() != null) {
-                            try {
-                                fileStorageService.deleteFileOnly(media.getUploadedFile().getUuid(), resolveDirectory(media.getUploadedFile().getCategory()));
-                            } catch (Exception e) {
-                                log.warn("No se pudo eliminar archivo uuid={}: {}", media.getUploadedFile().getUuid(), e.getMessage());
-                            }
+                        if (media.getUploadedFile() != null && 
+                            !uploadedFileUuidsReutilizados.contains(media.getUploadedFile().getUuid())) {
+                            filesToDelete.add(media.getUploadedFile());
                         }
-                        mediaRepository.delete(media);
+                        mediasToDelete.add(media);
                     }
-                });
+                }
+                
+                // 1. Primero eliminar registros de Media de la BD
+                if (!mediasToDelete.isEmpty()) {
+                    if (foundArticle.getArticle_medias() != null) {
+                        foundArticle.getArticle_medias().removeAll(mediasToDelete);
+                    }
+                    mediasToDelete.forEach(media -> media.setArticle(null));
+                    mediaRepository.deleteAll(mediasToDelete);
+                    mediaRepository.flush();
+                }
+                
+                // 2. Luego eliminar archivos físicos (si se eliminaron correctamente de BD)
+                for (UploadedFile file : filesToDelete) {
+                    try {
+                        fileStorageService.deleteFileOnly(file.getUuid(), resolveDirectory(file.getCategory()));
+                        log.info("Archivo eliminado del disco: {}", file.getUuid());
+                    } catch (Exception e) {
+                        log.error("No se pudo eliminar archivo uuid={}: {}", file.getUuid(), e.getMessage());
+                        // No lanzar excepción para no romper la transacción
+                    }
+                }
             }
-
+            
             List<MediaDTO> nuevas = articleDTO.getMedias().stream()
                     .filter(m -> m.getUuid() == null)
                     .collect(Collectors.toList());
             saveMedia(nuevas, foundArticle);
         }
-
-        if (articleDTO.getLinks() != null) {
+          if (articleDTO.getLinks() != null) {
             List<Link> oldLinks = linkRepository.findAllByOwnerTypeAndOwnerUuid(OwnerType.ARTICLE, foundArticle.getUuid());
             if (oldLinks != null && !oldLinks.isEmpty()) {
                 linkRepository.deleteAll(oldLinks);
@@ -265,9 +297,11 @@ public class ArticleService {
         foundArticle.setTitle(articleDTO.getTitle());
         foundArticle.setText(articleDTO.getText());
 
-        return articleMapper.toDTO(articleRepository.save(foundArticle));
-    }
+        articleRepository.saveAndFlush(foundArticle);
+        entityManager.clear();
+        return articleMapper.toDTO(articleRepository.findOneByUuid(articleUuid));
 
+    }
     private String resolveDirectory(FileCategory category) {
         if (category == null) return PHOTOS_DIRECTORY;
         return switch (category) {
