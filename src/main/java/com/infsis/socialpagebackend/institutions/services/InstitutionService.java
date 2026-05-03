@@ -3,6 +3,9 @@ package com.infsis.socialpagebackend.institutions.services;
 import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.mappers.InstitutionMapper;
+import com.infsis.socialpagebackend.medias.models.UploadedFile;
+import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
+import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.posts.dtos.MediaItemDTO;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
@@ -22,11 +25,6 @@ import java.util.stream.Collectors;
 @Component
 public class InstitutionService {
 
-    private static final String INST_PROFILE_PHOTO_DIR = System.getProperty("user.dir") + "/storage/institution/profile/photos/";
-    private static final String IMAGES_INSTITUTION_PROFILE_PATH = "/api/v1/images/inst-profile/";
-    private static final String INST_COVER_DIR = System.getProperty("user.dir") + "/storage/institution/cover/photos/";
-    private static final String IMAGES_INSTITUTION_COVER_PATH = "/api/v1/images/inst-cover/";
-
     @Autowired
     private InstitutionRepository institutionRepository;
 
@@ -38,6 +36,12 @@ public class InstitutionService {
 
     @Autowired
     private AppUrlProperties appUrlProperties;
+
+    @Autowired
+    private UploadedFileRepository uploadedFileRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public InstitutionDTO getInstitution(String institutionUuid) {
         Institution institution = institutionRepository.findOneByUuid(institutionUuid);
@@ -61,13 +65,19 @@ public class InstitutionService {
         }
 
         Institution institution = institutionMapper.getInstitution(institutionDTO);
+        institution.setLogoFile(resolveFileFromUuid(institutionDTO.getLogoFileUuid()));
+        institution.setBackgroundFile(resolveFileFromUuid(institutionDTO.getBackgroundFileUuid()));
         institutionRepository.save(institution);
 
         return institutionMapper.toDTO(institution);
     }
 
-    public InstitutionDTO updateInstitution(InstitutionDTO institutionDTO) {
-        Optional<Institution> optionalInstitution = findInstitution(institutionDTO.getUuid());
+    public InstitutionDTO updateInstitution(InstitutionDTO institutionDTO, boolean callerIsRoot, String callerInstitutionId) {
+        String targetUuid = callerIsRoot ? institutionDTO.getUuid() : callerInstitutionId;
+        if (targetUuid == null || targetUuid.isBlank()) {
+            throw new IllegalArgumentException("Institution UUID is required.");
+        }
+        Optional<Institution> optionalInstitution = findInstitution(targetUuid);
 
         Institution institution = optionalInstitution.get();
 
@@ -87,10 +97,37 @@ public class InstitutionService {
         institution.setEmail(institutionDTO.getEmail());
         institution.setPhone(institutionDTO.getPhone());
         institution.setUrl(institutionDTO.getUrl());
-        institution.setLogo_url(institutionDTO.getLogo_url());
-        institution.setBackground_url(institutionDTO.getBackground_url());
+
+        UploadedFile oldLogoFile = null;
+        UploadedFile oldBackgroundFile = null;
+
+        if (institutionDTO.getLogoFileUuid() != null && !institutionDTO.getLogoFileUuid().isBlank()) {
+            UploadedFile current = institution.getLogoFile();
+            if (current == null || !current.getUuid().equals(institutionDTO.getLogoFileUuid())) {
+                UploadedFile newFile = uploadedFileRepository.findByUuid(institutionDTO.getLogoFileUuid())
+                        .orElseThrow(() -> new IllegalArgumentException("Archivo no encontrado con UUID: " + institutionDTO.getLogoFileUuid()));
+                oldLogoFile = current;
+                institution.setLogoFile(newFile);
+                institution.setLogo_url(newFile.getUrlResource());
+            }
+        }
+
+        if (institutionDTO.getBackgroundFileUuid() != null && !institutionDTO.getBackgroundFileUuid().isBlank()) {
+            UploadedFile current = institution.getBackgroundFile();
+            if (current == null || !current.getUuid().equals(institutionDTO.getBackgroundFileUuid())) {
+                UploadedFile newFile = uploadedFileRepository.findByUuid(institutionDTO.getBackgroundFileUuid())
+                        .orElseThrow(() -> new IllegalArgumentException("Archivo no encontrado con UUID: " + institutionDTO.getBackgroundFileUuid()));
+                oldBackgroundFile = current;
+                institution.setBackgroundFile(newFile);
+                institution.setBackground_url(newFile.getUrlResource());
+            }
+        }
 
         institutionRepository.save(institution);
+
+        if (oldLogoFile != null) fileStorageService.deleteFileOnlyByUuid(oldLogoFile.getUuid());
+        if (oldBackgroundFile != null) fileStorageService.deleteFileOnlyByUuid(oldBackgroundFile.getUuid());
+
         return institutionMapper.toDTO(institution);
     }
 
@@ -100,6 +137,12 @@ public class InstitutionService {
         Institution institution = optionalInstitution.get();
         institutionRepository.delete(institution);
         return institutionMapper.toDTO(institution);
+    }
+
+    private UploadedFile resolveFileFromUuid(String uuid) {
+        if (uuid == null || uuid.isBlank()) return null;
+        return uploadedFileRepository.findByUuid(uuid)
+                .orElseThrow(() -> new IllegalArgumentException("Archivo no encontrado con UUID: " + uuid));
     }
 
     private Optional<Institution> findInstitution(String institutionUuid) {

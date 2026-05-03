@@ -23,8 +23,19 @@ public class InstitutionMapper {
         institutionDTO.setEmail(institution.getEmail());
         institutionDTO.setPhone(institution.getPhone());
         institutionDTO.setUrl(institution.getUrl());
-        institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogo_url()));
-        institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackground_url()));
+        if (institution.getLogoFile() != null) {
+            institutionDTO.setLogoFileUuid(institution.getLogoFile().getUuid());
+            institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogoFile().getUrlResource()));
+        } else {
+            institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogo_url()));
+        }
+
+        if (institution.getBackgroundFile() != null) {
+            institutionDTO.setBackgroundFileUuid(institution.getBackgroundFile().getUuid());
+            institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackgroundFile().getUrlResource()));
+        } else {
+            institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackground_url()));
+        }
         return institutionDTO;
     }
 
