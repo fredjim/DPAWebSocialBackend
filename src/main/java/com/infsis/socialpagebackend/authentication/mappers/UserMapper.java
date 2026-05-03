@@ -21,8 +21,19 @@ public class UserMapper {
         userDetailDTO.setEmail(user.getEmail());
         userDetailDTO.setPassword(user.getPassword());
         userDetailDTO.setPhone(user.getPhone());
-        userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhoto_profile_path()));
-        userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhoto_cover_path()));
+        if (user.getPhotoProfileFile() != null) {
+            userDetailDTO.setPhotoProfileFileUuid(user.getPhotoProfileFile().getUuid());
+            userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhotoProfileFile().getUrlResource()));
+        } else {
+            userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhoto_profile_path()));
+        }
+
+        if (user.getPhotoCoverFile() != null) {
+            userDetailDTO.setPhotoCoverFileUuid(user.getPhotoCoverFile().getUuid());
+            userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhotoCoverFile().getUrlResource()));
+        } else {
+            userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhoto_cover_path()));
+        }
         userDetailDTO.setInstitutionId(user.getInstitutionId());
 
         return userDetailDTO;

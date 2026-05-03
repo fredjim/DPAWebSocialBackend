@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.authentication.models;
 
+import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.reactions.models.PostReaction;
 import jakarta.persistence.*;
@@ -47,6 +48,14 @@ public class Users {
 
     @Column(length = 100)
     private String photo_cover_path;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "photo_profile_file_id", unique = true)
+    private UploadedFile photoProfileFile;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "photo_cover_file_id", unique = true)
+    private UploadedFile photoCoverFile;
 
     @Column(length = 36)
     private String institutionId;

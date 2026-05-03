@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
     @Query("SELECT u FROM Users u JOIN u.roles r WHERE r.name = ?1")
     List<Users> findAllByRoleName(String roleName);
 
+    @Query("SELECT u FROM Users u JOIN u.roles r WHERE r.name = ?1 AND u.institutionId = ?2")
+    List<Users> findAllByRoleNameAndInstitutionId(String roleName, String institutionId);
+
     @Query("SELECT u FROM Users u JOIN u.roles r WHERE u.uuid = ?1 AND r.name = ?2")
     Optional<Users> findByUuidAndRoleName(String uuid, String roleName);
 }

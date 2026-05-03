@@ -144,8 +144,9 @@ public class AuthenticationController {
 
     @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
     @GetMapping("/v1/users/admin")
-    public ResponseEntity<java.util.List<UserDetailDTO>> getAdminUsers() {
-        return new ResponseEntity<>(authenticationService.getAdminUsers(), HttpStatus.OK);
+    public ResponseEntity<java.util.List<UserDetailDTO>> getAdminUsers(
+            @RequestParam(required = false) String institutionId) {
+        return new ResponseEntity<>(authenticationService.getAdminUsers(institutionId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasAuthority('CREATE_USER_ADMIN')")
