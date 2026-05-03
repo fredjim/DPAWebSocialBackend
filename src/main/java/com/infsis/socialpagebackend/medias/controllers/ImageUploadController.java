@@ -84,10 +84,10 @@ public class ImageUploadController {
         return fileStorageService.getFileResponse(uuid, USER_PROFILE_PHOTO_DIR);
     }
 
-    @PreAuthorize("hasAuthority('DELETE_POST_IMAGE')")
+    @PreAuthorize("hasAnyAuthority('DELETE_POST_IMAGE', 'DELETE_INST_IMAGE', 'DELETE_USER_IMAGE')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePostImage(@PathVariable String uuid) {
-        fileStorageService.deleteFile(uuid, POSTS_PHOTOS_DIRECTORY);
+    public void deleteImage(@PathVariable String uuid) {
+        fileStorageService.deleteFileByUuid(uuid);
     }
 }
