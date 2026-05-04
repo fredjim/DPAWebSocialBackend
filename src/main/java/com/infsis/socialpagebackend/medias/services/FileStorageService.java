@@ -31,6 +31,11 @@ public class FileStorageService {
 
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 
+    private static final String POSTS_PHOTOS_DIRECTORY = System.getProperty("user.dir") + "/storage/institution/posts/photos/";
+    private static final String INST_PROFILE_PHOTO_DIR = System.getProperty("user.dir") + "/storage/institution/profile/photos/";
+    private static final String INST_COVER_DIR         = System.getProperty("user.dir") + "/storage/institution/cover/photos/";
+    private static final String USER_PROFILE_PHOTO_DIR = System.getProperty("user.dir") + "/storage/users/photos/";
+
     @Autowired
     private UploadedFileRepository uploadedFileRepository;
 
@@ -154,6 +159,54 @@ public class FileStorageService {
             logger.warn("Error deleting physical file uuid={}, removing DB record anyway", uuid);
             uploadedFileRepository.delete(file);
         }
+    }
+
+    /**
+     * Delete a file by UUID, auto-detecting the storage directory from its urlResource.
+     * Removes the physical file, any associated Media row, and the UploadedFile record.
+     */
+    @Transactional
+    public void deleteFileByUuid(String uuid) {
+        logger.info("Deleting file (auto-dir) uuid={}", uuid);
+        UploadedFile file = uploadedFileRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("File", uuid));
+        String directory = resolveDirectory(file.getUrlResource());
+        try {
+            mediaRepository.findByUploadedFileUuid(uuid).ifPresent(mediaRepository::delete);
+            fileStorageStrategy.deleteFile(uuid, directory);
+            uploadedFileRepository.delete(file);
+            logger.info("File deleted (auto-dir) uuid={}", uuid);
+        } catch (IOException e) {
+            throw new FileStorageException("Error deleting file: " + uuid, e);
+        }
+    }
+
+    /**
+     * Delete only the physical file and the UploadedFile record, auto-detecting the directory.
+     * Used when replacing a profile/cover photo — the caller has already detached the FK.
+     */
+    @Transactional
+    public void deleteFileOnlyByUuid(String uuid) {
+        logger.info("Deleting file (only, auto-dir) uuid={}", uuid);
+        UploadedFile file = uploadedFileRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("File", uuid));
+        String directory = resolveDirectory(file.getUrlResource());
+        try {
+            fileStorageStrategy.deleteFile(uuid, directory);
+            uploadedFileRepository.delete(file);
+            logger.info("File (only) deleted (auto-dir) uuid={}", uuid);
+        } catch (IOException e) {
+            logger.warn("Error deleting physical file uuid={}, removing DB record anyway", uuid);
+            uploadedFileRepository.delete(file);
+        }
+    }
+
+    private String resolveDirectory(String urlResource) {
+        if (urlResource.contains("/inst-profile/")) return INST_PROFILE_PHOTO_DIR;
+        if (urlResource.contains("/inst-cover/"))   return INST_COVER_DIR;
+        if (urlResource.contains("/users/"))        return USER_PROFILE_PHOTO_DIR;
+        if (urlResource.contains("/posts/"))        return POSTS_PHOTOS_DIRECTORY;
+        throw new FileStorageException("Cannot resolve storage directory for: " + urlResource);
     }
 
     // ── private helpers ──────────────────────────────────────────────────────

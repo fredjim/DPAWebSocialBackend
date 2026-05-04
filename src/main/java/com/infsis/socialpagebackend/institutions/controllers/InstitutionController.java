@@ -6,6 +6,7 @@ import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.services.InstitutionService;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import com.infsis.socialpagebackend.security.AuthContext;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class InstitutionController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private AuthContext authContext;
 
     @GetMapping("/current")
     public InstitutionDTO getCurrent() {
@@ -56,9 +60,9 @@ public class InstitutionController {
     }
 
     @PreAuthorize("hasAuthority('UPDATE_INSTITUTION')")
-    @PutMapping("/{institutionUuid}")
+    @PutMapping()
     public InstitutionDTO update(@Valid @RequestBody InstitutionDTO institutionDTO) {
-        return institutionService.updateInstitution(institutionDTO);
+        return institutionService.updateInstitution(institutionDTO, authContext.isRoot(), authContext.getInstitutionId());
     }
 
     @PreAuthorize("hasAuthority('DELETE_INSTITUTION')")
@@ -67,25 +71,6 @@ public class InstitutionController {
         return institutionService.deleteInstitution(institutionUuid);
     }
 
-/*
-    @PostMapping("/{institutionUuid}/profile-photo")
-    @ResponseStatus(HttpStatus.OK)
-    public InstitutionDTO saveProfilePhoto(@PathVariable String institutionUuid, @RequestParam("image") @ValidImageFile MultipartFile photo) throws IOException {
-        List<MultipartFile> institutionProfileImage = new ArrayList<>();
-        institutionProfileImage.add(photo);
-
-        return institutionService.saveProfileImage(institutionUuid, institutionProfileImage);
-    }
-
-    @PostMapping("/{institutionUuid}/cover-photo")
-    @ResponseStatus(HttpStatus.OK)
-    public InstitutionDTO saveCoverPhoto(@PathVariable String institutionUuid, @RequestParam("image") @ValidImageFile MultipartFile photo) throws IOException {
-        List<MultipartFile> institutionCoverImage = new ArrayList<>();
-        institutionCoverImage.add(photo);
-
-        return institutionService.saveCoverImage(institutionUuid, institutionCoverImage);
-    }
-*/
     @GetMapping("/{institutionUuid}/photos")
     public List<MediaItemDTO> getPhotosByInstitution(@PathVariable String institutionUuid) {
         return postService.getMediasInstitution(institutionUuid, IMAGE);

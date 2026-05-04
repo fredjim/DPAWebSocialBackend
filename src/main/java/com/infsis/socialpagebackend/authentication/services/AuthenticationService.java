@@ -9,6 +9,9 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.models.Token;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.authentication.repositories.TokenRepository;
+import com.infsis.socialpagebackend.medias.models.UploadedFile;
+import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
+import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +30,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
     private final PasswordEncoder passwordEncoder;
+    private final UploadedFileRepository uploadedFileRepository;
+    private final FileStorageService fileStorageService;
 
     public AuthenticationService(
             UserRepository userRepository,
@@ -34,7 +39,9 @@ public class AuthenticationService {
             UserMapper userMapper,
             AuthenticationManager authenticationManager,
             JwtGenerator jwtGenerator,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            UploadedFileRepository uploadedFileRepository,
+            FileStorageService fileStorageService
     ) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -42,12 +49,51 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
         this.passwordEncoder = passwordEncoder;
+        this.uploadedFileRepository = uploadedFileRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     public UserDetailDTO updateUserProfile(UserDetailDTO userDetailDTO) {
         Users currentUser = getCurrentUser();
-        updateUserFields(currentUser, userDetailDTO);
+
+        UploadedFile oldProfileFile = null;
+        UploadedFile oldCoverFile = null;
+
+        if (userDetailDTO.getEmail() != null) currentUser.setEmail(userDetailDTO.getEmail());
+        if (userDetailDTO.getName() != null) currentUser.setName(userDetailDTO.getName());
+        if (userDetailDTO.getLastName() != null) currentUser.setLastName(userDetailDTO.getLastName());
+        if (userDetailDTO.getPassword() != null) currentUser.setPassword(passwordEncoder.encode(userDetailDTO.getPassword()));
+        if (userDetailDTO.getPhone() != null) currentUser.setPhone(userDetailDTO.getPhone());
+
+        if (userDetailDTO.getPhotoProfileFileUuid() != null) {
+            String newUuid = userDetailDTO.getPhotoProfileFileUuid();
+            UploadedFile current = currentUser.getPhotoProfileFile();
+            if (current == null || !current.getUuid().equals(newUuid)) {
+                UploadedFile newFile = uploadedFileRepository.findByUuid(newUuid)
+                        .orElseThrow(() -> new IllegalArgumentException("Archivo no encontrado con UUID: " + newUuid));
+                oldProfileFile = current;
+                currentUser.setPhotoProfileFile(newFile);
+                currentUser.setPhoto_profile_path(newFile.getUrlResource());
+            }
+        }
+
+        if (userDetailDTO.getPhotoCoverFileUuid() != null) {
+            String newUuid = userDetailDTO.getPhotoCoverFileUuid();
+            UploadedFile current = currentUser.getPhotoCoverFile();
+            if (current == null || !current.getUuid().equals(newUuid)) {
+                UploadedFile newFile = uploadedFileRepository.findByUuid(newUuid)
+                        .orElseThrow(() -> new IllegalArgumentException("Archivo no encontrado con UUID: " + newUuid));
+                oldCoverFile = current;
+                currentUser.setPhotoCoverFile(newFile);
+                currentUser.setPhoto_cover_path(newFile.getUrlResource());
+            }
+        }
+
         userRepository.save(currentUser);
+
+        if (oldProfileFile != null) fileStorageService.deleteFileOnlyByUuid(oldProfileFile.getUuid());
+        if (oldCoverFile != null) fileStorageService.deleteFileOnlyByUuid(oldCoverFile.getUuid());
+
         return userMapper.toDTO(currentUser);
     }
 
@@ -214,21 +260,13 @@ public class AuthenticationService {
         return true;
     }
 
-    private void updateUserFields(Users user, UserDetailDTO dto) {
-        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
-        if (dto.getName() != null) user.setName(dto.getName());
-        if (dto.getLastName() != null) user.setLastName(dto.getLastName());
-        if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        if (dto.getPhone() != null) user.setPhone(dto.getPhone());
-        if (dto.getPhoto_profile_path() != null) user.setPhoto_profile_path(dto.getPhoto_profile_path());
-        if (dto.getPhoto_cover_path() != null) user.setPhoto_cover_path(dto.getPhoto_cover_path());
-    }
-
     // ─── Admin user management (ROOT only) ───────────────────────────────────
 
-    public List<UserDetailDTO> getAdminUsers() {
-        return userRepository.findAllByRoleName("ADMIN")
-                .stream()
+    public List<UserDetailDTO> getAdminUsers(String institutionId) {
+        List<Users> users = institutionId != null
+                ? userRepository.findAllByRoleNameAndInstitutionId("ADMIN", institutionId)
+                : userRepository.findAllByRoleName("ADMIN");
+        return users.stream()
                 .map(u -> {
                     UserDetailDTO dto = userMapper.toDTO(u);
                     dto.setRole("ADMIN");

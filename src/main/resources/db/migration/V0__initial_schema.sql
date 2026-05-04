@@ -99,8 +99,8 @@ CREATE TABLE IF NOT EXISTS public.institution (
     email              character varying(80)  NOT NULL,
     phone              character varying(20)  NOT NULL,
     url                character varying(80)  NOT NULL,
-    logo_url           character varying(100) NOT NULL,
-    background_url     character varying(100) NOT NULL
+    logo_url           character varying(100) ,
+    background_url     character varying(100) 
 );
 
 CREATE TABLE IF NOT EXISTS public.users (

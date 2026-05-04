@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.institutions.models;
 
+import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.social_networks.models.SocialNetwork;
 import com.infsis.socialpagebackend.posts.models.Post;
 import jakarta.persistence.*;
@@ -58,6 +59,14 @@ public class Institution {
 
     @Column(nullable = false, length = 100)
     private String background_url;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "logo_file_id", unique = true)
+    private UploadedFile logoFile;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "background_file_id", unique = true)
+    private UploadedFile backgroundFile;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
@@ -191,6 +200,22 @@ public class Institution {
 
     public void setBackground_url(String background_url) {
         this.background_url = background_url;
+    }
+
+    public UploadedFile getLogoFile() {
+        return logoFile;
+    }
+
+    public void setLogoFile(UploadedFile logoFile) {
+        this.logoFile = logoFile;
+    }
+
+    public UploadedFile getBackgroundFile() {
+        return backgroundFile;
+    }
+
+    public void setBackgroundFile(UploadedFile backgroundFile) {
+        this.backgroundFile = backgroundFile;
     }
 
     public List<Post> getPosts() {

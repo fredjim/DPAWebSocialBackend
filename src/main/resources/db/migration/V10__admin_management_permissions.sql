@@ -16,7 +16,8 @@ SELECT setval(pg_get_serial_sequence('public.permissions', 'id_permission'),
 -- 2. ASSIGN CREATE_USER_ADMIN TO ROOT ONLY
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO public.rol_permissions (role_id, permission_id) VALUES
-    (1, 45)  -- ROOT → CREATE_USER_ADMIN
+    (1, 45),  -- ROOT → CREATE_USER_ADMIN
+    (1, 3)   -- ROOT → UPDATE_INSTITUTION (needed to manage institution details)
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────

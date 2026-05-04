@@ -49,12 +49,14 @@ public class InstitutionDTO {
     @Size(min = 3, max = 80)
     private String url;
 
-    @NotBlank
-    @Size(min = 3, max = 100)
+    // ── Input: UUID del UploadedFile obtenido al subir la imagen ─────────────
+    private String logoFileUuid;
+
+    private String backgroundFileUuid;
+
+    // ── Output: URL completa construida por el mapper (solo lectura) ──────────
     private String logo_url;
 
-    @NotBlank
-    @Size(min = 3, max = 100)
     private String background_url;
 
 }

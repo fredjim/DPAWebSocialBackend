@@ -25,10 +25,14 @@ public class UserDetailDTO {
     @Size(min = 7, max = 15)
     private String phone;
 
-    @Size(min = 3, max = 100)
+    // ── Input: UUID del UploadedFile obtenido al subir la imagen ─────────────
+    private String photoProfileFileUuid;
+
+    private String photoCoverFileUuid;
+
+    // ── Output: URL completa construida por el mapper (solo lectura) ──────────
     private String photo_profile_path;
 
-    @Size(min = 3, max = 100)
     private String photo_cover_path;
 
     private String role;
