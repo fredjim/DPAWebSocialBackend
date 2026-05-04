@@ -43,25 +43,25 @@ public class ImageUploadController {
     @PreAuthorize("hasAuthority('UPLOAD_INST_PROFILE_IMAGE')")
     @PostMapping("/inst-profile")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<UploadedFileDTO> uploadInstProfilePhoto(
+    public UploadedFileDTO uploadInstProfilePhoto(
             @RequestParam("image") @ValidImageFile MultipartFile image) {
-        return fileStorageService.storeFiles(List.of(image), FileCategory.IMAGE, INST_PROFILE_PHOTO_DIR, IMAGES_INSTITUTION_PROFILE_PATH);
+        return fileStorageService.storeFile(image, FileCategory.IMAGE, INST_PROFILE_PHOTO_DIR, IMAGES_INSTITUTION_PROFILE_PATH);
     }
 
     @PreAuthorize("hasAuthority('UPLOAD_INST_COVER_IMAGE')")
     @PostMapping("/inst-cover")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<UploadedFileDTO> uploadInstCoverPhoto(
+    public UploadedFileDTO uploadInstCoverPhoto(
             @RequestParam("image") @ValidImageFile MultipartFile image) {
-        return fileStorageService.storeFiles(List.of(image), FileCategory.IMAGE, INST_COVER_DIR, IMAGES_INSTITUTION_COVER_PATH);
+        return fileStorageService.storeFile(image, FileCategory.IMAGE, INST_COVER_DIR, IMAGES_INSTITUTION_COVER_PATH);
     }
 
     @PreAuthorize("hasAuthority('UPLOAD_USER_PROFILE_IMAGE')")
     @PostMapping("/user-profile")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<UploadedFileDTO> uploadUserPhoto(
+    public UploadedFileDTO uploadUserPhoto(
             @RequestParam("image") @ValidImageFile MultipartFile image) {
-        return fileStorageService.storeFiles(List.of(image), FileCategory.IMAGE, USER_PROFILE_PHOTO_DIR, IMAGES_USER_PATH);
+        return fileStorageService.storeFile(image, FileCategory.IMAGE, USER_PROFILE_PHOTO_DIR, IMAGES_USER_PATH);
     }
 
     @GetMapping("/posts/{uuid}")
