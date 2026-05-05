@@ -25,16 +25,16 @@ public class InstitutionMapper {
         institutionDTO.setUrl(institution.getUrl());
         if (institution.getLogoFile() != null) {
             institutionDTO.setLogoFileUuid(institution.getLogoFile().getUuid());
-            institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogoFile().getUrlResource()));
+            institutionDTO.setLogo_url(buildUrlIfPresent(institution.getLogoFile().getUrlResource()));
         } else {
-            institutionDTO.setLogo_url(appUrlProperties.buildResourceUrl(institution.getLogo_url()));
+            institutionDTO.setLogo_url(buildUrlIfPresent(institution.getLogo_url()));
         }
 
         if (institution.getBackgroundFile() != null) {
             institutionDTO.setBackgroundFileUuid(institution.getBackgroundFile().getUuid());
-            institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackgroundFile().getUrlResource()));
+            institutionDTO.setBackground_url(buildUrlIfPresent(institution.getBackgroundFile().getUrlResource()));
         } else {
-            institutionDTO.setBackground_url(appUrlProperties.buildResourceUrl(institution.getBackground_url()));
+            institutionDTO.setBackground_url(buildUrlIfPresent(institution.getBackground_url()));
         }
         return institutionDTO;
     }
@@ -55,4 +55,10 @@ public class InstitutionMapper {
         return institution;
     }
 
+    private String buildUrlIfPresent(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        return appUrlProperties.buildResourceUrl(path);
+    }
 }
