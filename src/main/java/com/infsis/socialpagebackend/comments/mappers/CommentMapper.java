@@ -27,11 +27,12 @@ public class CommentMapper {
     }
     
 
-    public Comment getComment(CommentDTO commentDTO, Users user, Post post) {
+    public Comment getComment(CommentDTO commentDTO, Users user, Post post, String institutionId) {
         Comment comment = new Comment();
         comment.setContent(commentDTO.getContent());
         comment.setUser(user);
         comment.setPost(post);
+        comment.setInstitutionId(institutionId);
         // si el DTO no trae fecha, usar la fecha actual para evitar violación de NOT NULL
         if (commentDTO.getDate() == null) {
             comment.setComment_date(new Date());
