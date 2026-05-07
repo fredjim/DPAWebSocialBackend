@@ -7,7 +7,6 @@ import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.authentication.models.Users;
-import com.infsis.socialpagebackend.posts.repositories.CommentConfigRepository;
 import com.infsis.socialpagebackend.comments.repositories.CommentRepository;
 import com.infsis.socialpagebackend.posts.repositories.PostRepository;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
@@ -40,16 +39,14 @@ public class CommentService {
     private CommentMapper commentMapper;
 
     @Autowired
-    private CommentConfigRepository commentConfigRepository;
-
-    @Autowired
     private ModerationPipeline moderationPipeline;
 
     public CommentDTO saveComment(String postUuid, CommentDTO commentDTO) {
 
+        String tenantId = TenantContext.getCurrentTenant();
+
         Users user = getCurrentUser();
         Post post = postRepository.findOneByUuid(postUuid);
-        String commentConfig = post.getComment_conf().getConfiguration_type();
 
         // ── Moderación automática ────────────────────────────────────────────
         ModerationResponse modResult = moderationPipeline.moderate(commentDTO.getContent());
@@ -59,7 +56,7 @@ public class CommentService {
         }
 
         // ── Determinar estado del comentario ─────────────────────────────────
-        Comment comment = commentMapper.getComment(commentDTO, user, post);
+        Comment comment = commentMapper.getComment(commentDTO, user, post, tenantId);
 
         boolean requiresManualReview = modResult.isNeedsReview();
 
