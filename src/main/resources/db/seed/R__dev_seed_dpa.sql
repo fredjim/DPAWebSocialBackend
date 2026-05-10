@@ -175,44 +175,93 @@ ON CONFLICT DO NOTHING;
 
 
 
-
-insert into image_file (id, uuid, name, url_resource, status, type) values
-    (113, 'f1309a27-93eb-4429-a096-d786f8d16f5c', 'img14', '/api/v1/images/inst-profile/f1309a27-93eb-4429-a096-d786f8d16f5c', 'SAVED_SUCCESSFULLY','image/png'),
-    (114, '14bacba4-b962-40b5-9dd1-d5bf8e1e86f8', 'img15', '/api/v1/images/inst-cover/14bacba4-b962-40b5-9dd1-d5bf8e1e86f8', 'SAVED_SUCCESSFULLY','image/png'),
-    (115, 'd22882a6-5f9c-4cd3-95dc-534c5d5f05a8', 'img14', '/api/v1/images/inst-profile/d22882a6-5f9c-4cd3-95dc-534c5d5f05a8', 'SAVED_SUCCESSFULLY','image/png'),
-    (116, '75440bfb-6cd3-4a26-8038-79fc8859f753', 'img15', '/api/v1/images/inst-cover/75440bfb-6cd3-4a26-8038-79fc8859f753', 'SAVED_SUCCESSFULLY','image/png'),
-    (117, '7baffe0f-4f73-4a67-981a-0bcf906628a2', 'img14', '/api/v1/images/inst-profile/7baffe0f-4f73-4a67-981a-0bcf906628a2', 'SAVED_SUCCESSFULLY','image/png'),
-    (118, 'bb6428a1-3daf-4dc5-a72f-d33bc99c3a9b', 'img15', '/api/v1/images/inst-cover/bb6428a1-3daf-4dc5-a72f-d33bc99c3a9b', 'SAVED_SUCCESSFULLY','image/png')
-    ON CONFLICT DO NOTHING;
-
-
-
-
 -- ********************************************************************************************************************************
--- Phase 1: Add new table uploaded_file and migrate data from media.file_path
--- Migrar datos existentes de las tres tablas redundantes
-INSERT INTO public.uploaded_file (uuid, name, url_resource, category, mime_type, status)
-SELECT uuid, name, url_resource, 'IMAGE', type, status
-FROM public.image_file
+-- Phase 1: Insert directly into uploaded_file
+-- Ya no insertamos en image_file porque luego se elimina
+
+INSERT INTO public.uploaded_file (
+    id,
+    uuid,
+    name,
+    url_resource,
+    category,
+    mime_type,
+    status
+) VALUES
+    (
+        113,
+        'f1309a27-93eb-4429-a096-d786f8d16f5c',
+        'img14',
+        '/api/v1/images/inst-profile/f1309a27-93eb-4429-a096-d786f8d16f5c',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    ),
+    (
+        114,
+        '14bacba4-b962-40b5-9dd1-d5bf8e1e86f8',
+        'img15',
+        '/api/v1/images/inst-cover/14bacba4-b962-40b5-9dd1-d5bf8e1e86f8',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    ),
+    (
+        115,
+        'd22882a6-5f9c-4cd3-95dc-534c5d5f05a8',
+        'img14',
+        '/api/v1/images/inst-profile/d22882a6-5f9c-4cd3-95dc-534c5d5f05a8',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    ),
+    (
+        116,
+        '75440bfb-6cd3-4a26-8038-79fc8859f753',
+        'img15',
+        '/api/v1/images/inst-cover/75440bfb-6cd3-4a26-8038-79fc8859f753',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    ),
+    (
+        117,
+        '7baffe0f-4f73-4a67-981a-0bcf906628a2',
+        'img14',
+        '/api/v1/images/inst-profile/7baffe0f-4f73-4a67-981a-0bcf906628a2',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    ),
+    (
+        118,
+        'bb6428a1-3daf-4dc5-a72f-d33bc99c3a9b',
+        'img15',
+        '/api/v1/images/inst-cover/bb6428a1-3daf-4dc5-a72f-d33bc99c3a9b',
+        'IMAGE',
+        'image/png',
+        'SAVED_SUCCESSFULLY'
+    )
 ON CONFLICT (uuid) DO NOTHING;
 
 
+-- ********************************************************************************************************************************
 -- Phase 2: Add FK uploaded_file_id to media and article_media tables
 
--- 2. Populate uploaded_file_id from matching url_resource
-    UPDATE public.media m
-    SET uploaded_file_id = uf.id
-    FROM public.uploaded_file uf
-    WHERE m.file_path = uf.url_resource;
+-- Populate uploaded_file_id from matching url_resource
+UPDATE public.media m
+SET uploaded_file_id = uf.id
+FROM public.uploaded_file uf
+WHERE m.file_path = uf.url_resource;
 
--- 3. Drop file_path from media
-    ALTER TABLE public.media
-    DROP COLUMN IF EXISTS file_path;
+-- Drop old file_path column
+ALTER TABLE public.media
+DROP COLUMN IF EXISTS file_path;
 
--- 4 Delete tables image_file, video_file and document_file
-    DROP TABLE IF EXISTS public.image_file;
-    DROP TABLE IF EXISTS public.video_file;
-    DROP TABLE IF EXISTS public.document_file;
+-- Drop deprecated tables
+DROP TABLE IF EXISTS public.image_file;
+DROP TABLE IF EXISTS public.video_file;
+DROP TABLE IF EXISTS public.document_file;
 -- ********************************************************************************************************************************
 
 -- ═══════════════════════════════════════════════════════════════
