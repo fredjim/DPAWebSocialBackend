@@ -63,6 +63,9 @@ public class Users {
     @Column(nullable = false)
     private boolean isRoot = false;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     public String getUuid() {
         return uuid;
     }
