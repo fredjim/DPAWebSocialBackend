@@ -2,9 +2,13 @@ package com.infsis.socialpagebackend.authentication.controllers;
 
 
 import com.infsis.socialpagebackend.authentication.dtos.AuthResponseDTO;
+import com.infsis.socialpagebackend.authentication.dtos.ForgotPasswordDTO;
+import com.infsis.socialpagebackend.authentication.dtos.ResetPasswordDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserDetailDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserLoginDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserRegistryDTO;
+import com.infsis.socialpagebackend.authentication.services.EmailVerificationService;
+import com.infsis.socialpagebackend.authentication.services.PasswordResetService;
 import com.infsis.socialpagebackend.authentication.models.Token;
 import com.infsis.socialpagebackend.authentication.models.Role;
 import com.infsis.socialpagebackend.authentication.models.Users;
@@ -15,6 +19,7 @@ import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import com.infsis.socialpagebackend.authentication.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/api")
@@ -37,17 +43,20 @@ public class AuthenticationController {
 
     private static final String PASSWORD_INVALID_MATCHING_MESSAGE = "Passwords don't match, try again";
     private static final String REGISTERED_USER_EMAIL_MESSAGE = "The user email is already registered";
-    private static final String SUCCESSFUL_USER_REGISTRATION_MESSAGE = "The user has been registered successfully";
     private static final String CLOSED_USER_SESSION_MESSAGE = "User session closed successfully";
-    private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_STUDENT = "STUDENT";
-    private static final String ROLE_MODERATOR = "MODERATOR";
 
     @Autowired
     private TokenRepository tokenRepository;
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     @Autowired
     private TenantResolver tenantResolver;
@@ -95,7 +104,17 @@ public class AuthenticationController {
         usuarios.setRoles(Collections.singletonList(roles));
         usuariosRepository.save(usuarios);
 
-        return new ResponseEntity<>(Collections.singletonMap("message", SUCCESSFUL_USER_REGISTRATION_MESSAGE), HttpStatus.OK);
+        try {
+            emailVerificationService.generateAndSend(usuarios);
+        } catch (Exception e) {
+            log.warn("No se pudo enviar el email de verificación a {}: {}", usuarios.getEmail(), e.getMessage());
+            return new ResponseEntity<>(Collections.singletonMap("message",
+                    "Usuario registrado, pero no se pudo enviar el email de verificación. Contacta al administrador."),
+                    HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(Collections.singletonMap("message",
+                "Te enviamos un email para verificar tu cuenta."), HttpStatus.OK);
     }
 
     @PostMapping("/auth/root/login")
@@ -164,5 +183,28 @@ public class AuthenticationController {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Admin user deleted successfully");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/auth/verify-email")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam String token) {
+        emailVerificationService.verify(token);
+        return ResponseEntity.ok(Collections.singletonMap("message",
+                "Email verificado correctamente. Ya puedes iniciar sesión."));
+    }
+
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<Map<String, Object>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordDTO dto) {
+        passwordResetService.requestReset(dto.email());
+        return ResponseEntity.ok(Collections.singletonMap("message",
+                "Si el email existe, recibirás un enlace para restablecer tu contraseña."));
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(
+            @Valid @RequestBody ResetPasswordDTO dto) {
+        passwordResetService.resetPassword(dto.token(), dto.newPassword());
+        return ResponseEntity.ok(Collections.singletonMap("message",
+                "Contraseña actualizada correctamente."));
     }
 }

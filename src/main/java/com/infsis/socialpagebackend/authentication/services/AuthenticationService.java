@@ -133,6 +133,12 @@ public class AuthenticationService {
             throw new IllegalArgumentException("El usuario no pertenece a esta institución.");
         }
 
+        boolean isStudent = user.getRoles().stream()
+                .anyMatch(r -> "STUDENT".equalsIgnoreCase(r.getName()));
+        if (isStudent && !user.isEmailVerified()) {
+            throw new IllegalArgumentException("Debes verificar tu email antes de iniciar sesión.");
+        }
+
         String accessToken = jwtGenerator.generarAccessToken(user);
         String refreshToken = jwtGenerator.generarRefreshToken(user);
         revokeAllUserRefreshTokens(user);
