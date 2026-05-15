@@ -43,7 +43,7 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
     private Date comment_date;
 
     @Column(nullable = false)
