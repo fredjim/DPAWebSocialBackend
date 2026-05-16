@@ -90,13 +90,13 @@ public class InstitutionService {
             institution.setSlug(institutionDTO.getSlug());
         }
 
-        institution.setName(institutionDTO.getName());
-        institution.setDescription(institutionDTO.getDescription());
-        institution.setLocation(institutionDTO.getLocation());
-        institution.setCategory(institutionDTO.getCategory());
-        institution.setEmail(institutionDTO.getEmail());
-        institution.setPhone(institutionDTO.getPhone());
-        institution.setUrl(institutionDTO.getUrl());
+        if (institutionDTO.getName() != null) institution.setName(institutionDTO.getName());
+        if (institutionDTO.getDescription() != null) institution.setDescription(institutionDTO.getDescription());
+        if (institutionDTO.getLocation() != null) institution.setLocation(institutionDTO.getLocation());
+        if (institutionDTO.getCategory() != null) institution.setCategory(institutionDTO.getCategory());
+        if (institutionDTO.getEmail() != null) institution.setEmail(institutionDTO.getEmail());
+        if (institutionDTO.getPhone() != null) institution.setPhone(institutionDTO.getPhone());
+        if (institutionDTO.getUrl() != null) institution.setUrl(institutionDTO.getUrl());
 
         UploadedFile oldLogoFile = null;
         UploadedFile oldBackgroundFile = null;
