@@ -50,6 +50,7 @@ public class Article {
     private Date date;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE)
+    @OrderBy("number ASC")
     private List<Media> article_medias;
 
     // Enlaces asociados al artículo
