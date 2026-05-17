@@ -23,6 +23,7 @@ public class Content {
     private String uuid;
 
     @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("number ASC")
     private List<Media> media;
 
     @OneToOne(mappedBy = "content", cascade = CascadeType.ALL)

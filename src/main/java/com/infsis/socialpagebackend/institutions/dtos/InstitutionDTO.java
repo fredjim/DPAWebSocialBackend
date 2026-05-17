@@ -16,7 +16,7 @@ public class InstitutionDTO {
     private String uuid;
 
     @NotBlank
-    @Size(min = 2, max = 100)
+    @Size(min = 2, max = 10)
     @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "El slug solo puede contener letras minúsculas, números y guiones, sin empezar ni terminar con guión")
     private String slug;
 
