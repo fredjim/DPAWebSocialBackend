@@ -186,7 +186,7 @@ public class PostService {
             content.setPost(post);
             contentRepository.save(content);
 
-            resDTO = postMapper.toDTO(post);
+            resDTO = postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid()));
 
         }
 
@@ -575,7 +575,8 @@ public class PostService {
 
         existingPost.setPost_date(postDTO.getDate());
 
-        return postMapper.toDTO(postRepository.save(existingPost));
+        Post savedPost = postRepository.save(existingPost);
+        return postMapper.toDTO(savedPost, getPostReactionCounterDTO(savedPost), getCommentCounter(savedPost.getUuid()));
     }
 
     /* Método para buscar publicaciones por texto  */
