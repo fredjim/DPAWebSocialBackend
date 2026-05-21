@@ -6,7 +6,9 @@ import com.infsis.socialpagebackend.posts.dtos.ContentDTO;
 import com.infsis.socialpagebackend.posts.dtos.ReactionCounterDTO;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.posts.dtos.PostDTO;
-import com.infsis.socialpagebackend.posts.models.*;
+import com.infsis.socialpagebackend.posts.models.Content;
+import com.infsis.socialpagebackend.posts.models.Post;
+import com.infsis.socialpagebackend.posts.models.Text;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +27,7 @@ public class PostMapper {
         postDTO.setUser_id(post.getUsers().getUuid());
         postDTO.setName(post.getUsers().getName());
         postDTO.setLastName(post.getUsers().getLastName());
-        postDTO.setComment_config_id(post.getComment_conf().getUuid());
+        postDTO.setCommentsEnabled(post.isCommentsEnabled());
         postDTO.setDate(post.getPost_date());
 
         return postDTO;
@@ -39,7 +41,7 @@ public class PostMapper {
         postDTO.setUser_id(post.getUsers().getUuid());
         postDTO.setName(post.getUsers().getName());
         postDTO.setLastName(post.getUsers().getLastName());
-        postDTO.setComment_config_id(post.getComment_conf().getUuid());
+        postDTO.setCommentsEnabled(post.isCommentsEnabled());
         postDTO.setDate(post.getPost_date());
         postDTO.setContent(contentMapper.toDTO(post.getContent()));
         postDTO.setReactions(reactionCounterDTO);
@@ -48,15 +50,13 @@ public class PostMapper {
         return postDTO;
     }
 
-    public Post getPost(PostDTO postDTO, Content content,
-                        CommentConfig commentConfig,
-                        Institution institution, Users user) {
+    public Post getPost(PostDTO postDTO, Content content, Institution institution, Users user) {
         Post post = new Post();
 
         post.setInstitution(institution);
         post.setUsers(user);
         post.setPost_type(postDTO.getPost_type());
-        post.setComment_conf(commentConfig);
+        post.setCommentsEnabled(postDTO.getCommentsEnabled() != null ? postDTO.getCommentsEnabled() : true);
         post.setPost_date(postDTO.getDate());
         post.setContent(content);
         return post;

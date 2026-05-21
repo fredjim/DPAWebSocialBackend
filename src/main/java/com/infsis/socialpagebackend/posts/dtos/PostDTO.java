@@ -14,8 +14,6 @@ public class PostDTO {
 
     private String uuid;
 
-    @NotBlank
-    @Size(min = 36, max = 40)
     private String institution_id;
 
     @Size(min = 36, max = 40)
@@ -25,9 +23,7 @@ public class PostDTO {
 
     private String lastName;
 
-    @NotBlank
-    @Size(min = 36, max = 40)
-    private String comment_config_id;
+    private Boolean commentsEnabled;
 
     @NotNull
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")

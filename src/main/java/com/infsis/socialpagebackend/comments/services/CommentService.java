@@ -16,9 +16,11 @@ import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedExceptio
 import com.infsis.socialpagebackend.moderation.services.ModerationPipeline;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +49,10 @@ public class CommentService {
 
         Users user = getCurrentUser();
         Post post = postRepository.findOneByUuid(postUuid);
+
+        if (!post.isCommentsEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los comentarios están desactivados en esta publicación");
+        }
 
         // ── Moderación automática ────────────────────────────────────────────
         ModerationResponse modResult = moderationPipeline.moderate(commentDTO.getContent());
