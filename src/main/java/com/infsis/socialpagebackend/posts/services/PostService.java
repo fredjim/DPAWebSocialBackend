@@ -81,9 +81,6 @@ public class PostService {
     private ContentRepository contentRepository;
 
     @Autowired
-    private CommentConfigRepository commentConfigRepository;
-
-    @Autowired
     private InstitutionRepository institutionRepository;
 
     @Autowired
@@ -159,9 +156,8 @@ public class PostService {
 
         Content content = contentRepository.save(new Content());
 
-        CommentConfig commentConfig = commentConfigRepository.findOneByUuid(postDTO.getComment_config_id());
-        Institution institution = institutionRepository.findOneByUuid(postDTO.getInstitution_id());
-        //Users user = userRepository.findOneByUuid(postDTO.getUser_id());
+        String tenantId = TenantContext.getCurrentTenant();
+        Institution institution = institutionRepository.findOneByUuid(tenantId);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -173,14 +169,14 @@ public class PostService {
         Post post = new Post();
         PostDTO resDTO = new PostDTO();
         List<Media> savedMedias = new ArrayList<>();
-        if (commentConfig != null && institution != null & user != null) {
+        if (institution != null && user != null) {
             savedMedias = saveMedia(postDTO.getContent(), content);
             Text text = saveText(postDTO.getContent(), content);
 
             content.setText(text);
             content.setMedia(savedMedias);
 
-            post = postMapper.getPost(postDTO, content, commentConfig, institution, user);
+            post = postMapper.getPost(postDTO, content, institution, user);
             postRepository.save(post);
 
             content.setPost(post);
@@ -192,7 +188,7 @@ public class PostService {
 
         // Publish in Facebook
         if (Boolean.TRUE.equals(postDTO.getFb_post_enable())) {
-            String institutionId = TenantContext.getCurrentTenant();
+            String institutionId = tenantId;
             final List<Media> mediasForFb = savedMedias;
             facebookConfigService.getActiveConfig(institutionId).ifPresentOrElse(
                 config -> publishToFacebook(
@@ -563,14 +559,8 @@ public class PostService {
             contentRepository.save(content);
         }
 
-        if (postDTO.getComment_config_id() != null) {
-            CommentConfig commentConfig = commentConfigRepository.findOneByUuid(postDTO.getComment_config_id());
-            existingPost.setComment_conf(commentConfig);
-        }
-
-        if (postDTO.getInstitution_id() != null) {
-            Institution institution = institutionRepository.findOneByUuid(postDTO.getInstitution_id());
-            existingPost.setInstitution(institution);
+        if (postDTO.getCommentsEnabled() != null) {
+            existingPost.setCommentsEnabled(postDTO.getCommentsEnabled());
         }
 
         existingPost.setPost_date(postDTO.getDate());

@@ -37,10 +37,6 @@ insert into user_roles (user_id, role_id)
      (120, 2),
      (121, 2),
      (122, 3);
-insert into comment_config (id, uuid, name, configuration_type)
-    values(20, '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', 'Todos pueden comentar', 'FREE_COMMENTS'),
-    (21, '587d7d7f-5g3n-4b77-cf98-77a9h46759d0', 'Nadie puede comentar', 'RESTRICTED_COMMENTS'),
-    (22, '492d7d7f-9f4s-8g45-hy34-77a9h46759d0', 'Comentarios con moderador', 'MODERATED_COMMENTS');
 
 insert into institution (id, uuid, name, description, location, category, email, phone, url, logo_url, background_url)
     values(10, '93j203b4-f63b-4c4a-be05-eae84cef0c0c',
@@ -110,20 +106,20 @@ values(100, '17ucf8a1-09e0-4435-a850-0613d778897b', '1e5294f8-9a6c-4d9e-aea7-da7
     (113, 'h6m2s9c7-09e0-4435-a850-0613d778897b', 'k3n6m1a9-9a6c-4d9e-aea7-da7e80bd5c6f', 1, 'img14', 'image', 'http://localhost:9090/api/v1/images/posts/18e154d3-c772-4dd0-ac24-847cefc0679a');
 
 
-insert into post (id, uuid, institution_id, user_id, comment_config_id, content_id, post_date)
-    values(100, '5f9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635','875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-10-30T12:52:22'),
-        (101, '7h3ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-10-31T07:34:22'),
-        (102, '2k9db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '587d7d7f-5g3n-4b77-cf98-77a9h46759d0', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-07T16:38:22'),
-        (103, '8s2ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-11T07:05:22'),
-        (104, '3g9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-14T09:21:22'),
-        (105, '5n1ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-15T09:59:12'),
-        (106, '9v4mb4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '492d7d7f-9f4s-8g45-hy34-77a9h46759d0', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-27T15:19:26'),
-        (107, '1ib6k3c5-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T10:14:18'),
-        (108, '4jc8m3b6-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '4g9dn2m6-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T11:53:12'),
-        (109, '2ox7z5n1-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', '9vm3n7a3-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T11:53:15'),
-        (110, 'l6b4m1z9-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '492d7d7f-9f4s-8g45-hy34-77a9h46759d0', 'n5x8f0j2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:01:03'),
-        (111, 'k5b3n5m1-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', 'g7k3v8d5-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:51:03'),
-        (112, 'f8j2n5m6-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '875d7d7f-7a1c-4b77-ab63-77a9f76759d0', 'k3n6m1a9-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-11T16:47:03');
+insert into post (id, uuid, institution_id, user_id, content_id, post_date)
+    values(100, '5f9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '1e5294f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-10-30T12:52:22'),
+        (101, '7h3ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '6i2494f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-10-31T07:34:22'),
+        (102, '2k9db4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '8f3194f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-07T16:38:22'),
+        (103, '8s2ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '5l6n94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-11T07:05:22'),
+        (104, '3g9ab4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '2v4z94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-14T09:21:22'),
+        (105, '5n1ib4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '7o1b94f8-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-15T09:59:12'),
+        (106, '9v4mb4e8-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '3m8c52v4-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-11-27T15:19:26'),
+        (107, '1ib6k3c5-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '1om5x7n2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T10:14:18'),
+        (108, '4jc8m3b6-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '4g9dn2m6-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T11:53:12'),
+        (109, '2ox7z5n1-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', '9vm3n7a3-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-05T11:53:15'),
+        (110, 'l6b4m1z9-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', 'n5x8f0j2-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:01:03'),
+        (111, 'k5b3n5m1-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', 'g7k3v8d5-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-10T10:51:03'),
+        (112, 'f8j2n5m6-0856-4aad-b3aa-747e2dba76d9', '93j203b4-f63b-4c4a-be05-eae84cef0c0c', 'j5818068-9280-4055-987c-087f1b1f6635', 'k3n6m1a9-9a6c-4d9e-aea7-da7e80bd5c6f', '2024-12-11T16:47:03');
 
 
 insert into emoji_type (id, uuid, emoji_name, emoji_code)

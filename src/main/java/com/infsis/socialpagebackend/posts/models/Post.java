@@ -9,8 +9,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -44,10 +42,8 @@ public class Post {
     @JoinColumn(name = "content_id", referencedColumnName = "uuid", nullable = false, unique = true)
     private Content content;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "comment_config_id", referencedColumnName = "uuid", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private CommentConfig comment_conf;
+    @Column(nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT TRUE")
+    private boolean commentsEnabled = true;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostReaction> postReactions;
@@ -88,11 +84,11 @@ public class Post {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Post post = (Post) o;
-        return deleted == post.deleted && Objects.equals(id, post.id) && Objects.equals(uuid, post.uuid) && Objects.equals(institution, post.institution) && Objects.equals(users, post.users) && Objects.equals(content, post.content) && Objects.equals(comment_conf, post.comment_conf) && Objects.equals(postReactions, post.postReactions) && Objects.equals(post_date, post.post_date) && Objects.equals(createdDate, post.createdDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(comments, post.comments);
+        return deleted == post.deleted && commentsEnabled == post.commentsEnabled && Objects.equals(id, post.id) && Objects.equals(uuid, post.uuid) && Objects.equals(institution, post.institution) && Objects.equals(users, post.users) && Objects.equals(content, post.content) && Objects.equals(postReactions, post.postReactions) && Objects.equals(post_date, post.post_date) && Objects.equals(createdDate, post.createdDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(comments, post.comments);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, uuid, institution, users, content, comment_conf, postReactions, post_date, createdDate, lastModifiedDate, comments, deleted);
+        return Objects.hash(id, uuid, institution, users, content, commentsEnabled, postReactions, post_date, createdDate, lastModifiedDate, comments, deleted);
     }
 }
