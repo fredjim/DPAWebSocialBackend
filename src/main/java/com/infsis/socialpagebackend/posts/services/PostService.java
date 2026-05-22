@@ -543,7 +543,8 @@ public class PostService {
                 List<MediaDTO> nuevas = postDTO.getContent().getMedia().stream()
                         .filter(m -> m.getUuid() == null)
                         .collect(Collectors.toList());
-                saveMedia(nuevas, content);
+                List<Media> savedNew = saveMedia(nuevas, content);
+                content.getMedia().addAll(savedNew);
             }
 
             if (postDTO.getContent().getText() != null) {
