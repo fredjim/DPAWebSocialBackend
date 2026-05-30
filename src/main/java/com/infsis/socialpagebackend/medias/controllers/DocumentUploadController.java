@@ -43,9 +43,9 @@ public class DocumentUploadController {
     @PreAuthorize("hasAuthority('UPLOAD_DOCUMENT')")
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public UploadedFileDTO handleFileUpload(
-            @RequestParam(name = "file") MultipartFile file) {
-        return fileStorageService.storeFile(file, FileCategory.DOCUMENT, DOCUMENTS_DIRECTORY, DOCUMENTS_PATH);
+    public List<UploadedFileDTO> handleFileUpload(
+            @RequestParam(name = "files") List<MultipartFile> files) {
+        return fileStorageService.storeFiles(files, FileCategory.DOCUMENT, DOCUMENTS_DIRECTORY, DOCUMENTS_PATH);
     }
 
     @GetMapping("/{documentUuid}/info")
