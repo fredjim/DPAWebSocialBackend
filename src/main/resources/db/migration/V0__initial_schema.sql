@@ -293,7 +293,7 @@ CREATE TABLE IF NOT EXISTS public.article (
     section_id         character varying(36),
     user_id            character varying(36),
     title              character varying(1000),
-    text               character varying(3000)
+    text               character varying(5000)
 );
 
 CREATE TABLE IF NOT EXISTS public.article_media (
