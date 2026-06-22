@@ -1,10 +1,12 @@
 package com.infsis.socialpagebackend.authentication.repositories;
 
 import com.infsis.socialpagebackend.authentication.models.Users;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +20,11 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
     @Query("SELECT u FROM Users u WHERE u.id = ?1")
     Users findOneById(Integer id);
 
-    //Método para poder buscar un usuario mediante su nombre
     Optional<Users> findByEmail(String email);
 
-    //Método para poder verificar si un usuario existe en nuestra base de datos
     Boolean existsByEmail(String email);
+
+    Optional<Users> findByUuid(String uuid);
 
     @Query("SELECT u FROM Users u JOIN u.roles r WHERE r.name = ?1")
     List<Users> findAllByRoleName(String roleName);
@@ -32,5 +34,38 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
 
     @Query("SELECT u FROM Users u JOIN u.roles r WHERE u.uuid = ?1 AND r.name = ?2")
     Optional<Users> findByUuidAndRoleName(String uuid, String roleName);
+
+    // ── Gestión genérica de usuarios (paginada con filtros) ──────────────────
+
+    @Query(value = """
+            SELECT u FROM Users u
+            WHERE u.isRoot = false
+            AND (:institutionId IS NULL OR u.institutionId = :institutionId)
+            AND (:roleName     IS NULL OR EXISTS (
+                    SELECT r FROM u.roles r WHERE r.name = :roleName))
+            AND (:enabled      IS NULL OR u.enabled = :enabled)
+            AND (:search       IS NULL OR (
+                    LOWER(u.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(u.lastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(u.email)     LIKE LOWER(CONCAT('%', :search, '%'))))
+            """,
+            countQuery = """
+            SELECT COUNT(u) FROM Users u
+            WHERE u.isRoot = false
+            AND (:institutionId IS NULL OR u.institutionId = :institutionId)
+            AND (:roleName     IS NULL OR EXISTS (
+                    SELECT r FROM u.roles r WHERE r.name = :roleName))
+            AND (:enabled      IS NULL OR u.enabled = :enabled)
+            AND (:search       IS NULL OR (
+                    LOWER(u.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(u.lastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(u.email)     LIKE LOWER(CONCAT('%', :search, '%'))))
+            """)
+    Page<Users> findAllWithFilters(
+            @Param("institutionId") String institutionId,
+            @Param("roleName")      String roleName,
+            @Param("enabled")       Boolean enabled,
+            @Param("search")        String search,
+            Pageable pageable);
 }
 

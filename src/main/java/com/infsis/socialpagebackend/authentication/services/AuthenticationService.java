@@ -4,6 +4,8 @@ import com.infsis.socialpagebackend.authentication.dtos.AuthResponseDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserDetailDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserLoginDTO;
 import com.infsis.socialpagebackend.authentication.mappers.UserMapper;
+import com.infsis.socialpagebackend.exceptions.AccountDisabledException;
+import com.infsis.socialpagebackend.exceptions.InvalidCredentialsException;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.models.Token;
@@ -14,8 +16,11 @@ import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -136,7 +141,7 @@ public class AuthenticationService {
         boolean isStudent = user.getRoles().stream()
                 .anyMatch(r -> "STUDENT".equalsIgnoreCase(r.getName()));
         if (isStudent && !user.isEmailVerified()) {
-            throw new IllegalArgumentException("Debes verificar tu email antes de iniciar sesión.");
+            throw new AccountDisabledException("Debes verificar tu email antes de iniciar sesión.");
         }
 
         String accessToken = jwtGenerator.generarAccessToken(user);
@@ -215,9 +220,17 @@ public class AuthenticationService {
     }
 
     private void authenticateUser(String email, String password) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+        } catch (DisabledException e) {
+            throw new AccountDisabledException("La cuenta está deshabilitada. Contacta al administrador.");
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException("Credenciales incorrectas. Verifica tu email y contraseña.");
+        } catch (AuthenticationException e) {
+            throw new InvalidCredentialsException("Error de autenticación: " + e.getMessage());
+        }
     }
 
     private Users findUserByEmail(String email) {
