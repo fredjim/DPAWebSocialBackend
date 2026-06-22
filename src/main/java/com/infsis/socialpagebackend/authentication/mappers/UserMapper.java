@@ -19,8 +19,14 @@ public class UserMapper {
         userDetailDTO.setName(user.getName());
         userDetailDTO.setLastName(user.getLastName());
         userDetailDTO.setEmail(user.getEmail());
-        userDetailDTO.setPassword(user.getPassword());
         userDetailDTO.setPhone(user.getPhone());
+        userDetailDTO.setInstitutionId(user.getInstitutionId());
+        userDetailDTO.setEnabled(user.isEnabled());
+
+        if (!user.getRoles().isEmpty()) {
+            userDetailDTO.setRole(user.getRoles().get(0).getName());
+        }
+
         if (user.getPhotoProfileFile() != null) {
             userDetailDTO.setPhotoProfileFileUuid(user.getPhotoProfileFile().getUuid());
             userDetailDTO.setPhoto_profile_path(buildUrlIfPresent(user.getPhotoProfileFile().getUrlResource()));
@@ -34,7 +40,6 @@ public class UserMapper {
         } else {
             userDetailDTO.setPhoto_cover_path(buildUrlIfPresent(user.getPhoto_cover_path()));
         }
-        userDetailDTO.setInstitutionId(user.getInstitutionId());
 
         return userDetailDTO;
     }
