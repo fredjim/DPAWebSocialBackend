@@ -9,6 +9,7 @@ import com.infsis.socialpagebackend.security.AuthContext;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,11 +18,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @Validated
 public class UserController {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "lastName", "email");
 
     private final UserService userService;
     private final RoleService roleService;
@@ -55,10 +59,17 @@ public class UserController {
             @RequestParam(required = false) Boolean enabled,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String institutionId,
-            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         if (authContext.isRoot() && (institutionId == null || institutionId.trim().isEmpty())) {
             throw new IllegalArgumentException("El usuario ROOT debe proveer el id de la institución (institutionId) para listar usuarios.");
         }
+        pageable.getSort().forEach(order -> {
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new IllegalArgumentException(
+                    "Campo de ordenamiento inválido: '" + order.getProperty() +
+                    "'. Campos permitidos: name, lastName, email");
+            }
+        });
         return userService.listUsers(role, enabled, search, institutionId,
                 authContext.isRoot(), authContext.getInstitutionId(), pageable);
     }
