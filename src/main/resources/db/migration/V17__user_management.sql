@@ -13,9 +13,9 @@ ALTER TABLE public.users
 --    Siguiente ID libre después de id=45 (CREATE_USER_ADMIN).
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO public.permissions (id_permission, name_permission) VALUES
-    (46, 'VIEW_USERS'),
-    (47, 'EDIT_USER'),
-    (48, 'DELETE_USER')
+    (47, 'VIEW_USERS'),
+    (48, 'EDIT_USER'),
+    (49, 'DELETE_USER')
 ON CONFLICT DO NOTHING;
 
 -- Marcar como system_only → solo ROOT/ADMIN pueden tenerlos,
@@ -31,16 +31,16 @@ SELECT setval(pg_get_serial_sequence('public.permissions', 'id_permission'),
 -- 3. ASIGNAR PERMISOS A ROOT (role_id = 1)
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO public.rol_permissions (role_id, permission_id) VALUES
-    (1, 46),   -- ROOT → VIEW_USERS
-    (1, 47),   -- ROOT → EDIT_USER
-    (1, 48)    -- ROOT → DELETE_USER
+    (1, 47),   -- ROOT → VIEW_USERS
+    (1, 48),   -- ROOT → EDIT_USER
+    (1, 49)    -- ROOT → DELETE_USER
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────
 -- 4. ASIGNAR PERMISOS A ADMIN (role_id = 2)
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO public.rol_permissions (role_id, permission_id) VALUES
-    (2, 46),   -- ADMIN → VIEW_USERS
-    (2, 47),   -- ADMIN → EDIT_USER
-    (2, 48)    -- ADMIN → DELETE_USER
+    (2, 47),   -- ADMIN → VIEW_USERS
+    (2, 48),   -- ADMIN → EDIT_USER
+    (2, 49)    -- ADMIN → DELETE_USER
 ON CONFLICT DO NOTHING;

@@ -38,29 +38,36 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
     // ── Gestión genérica de usuarios (paginada con filtros) ──────────────────
 
     @Query(value = """
-            SELECT u FROM Users u
-            WHERE u.isRoot = false
-            AND (:institutionId IS NULL OR u.institutionId = :institutionId)
-            AND (:roleName     IS NULL OR EXISTS (
-                    SELECT r FROM u.roles r WHERE r.name = :roleName))
-            AND (:enabled      IS NULL OR u.enabled = :enabled)
-            AND (:search       IS NULL OR (
-                    LOWER(u.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(u.lastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(u.email)     LIKE LOWER(CONCAT('%', :search, '%'))))
+            SELECT u.* FROM users u
+            WHERE u.is_root = false
+              AND (CAST(:institutionId AS text) IS NULL OR u.institution_id = CAST(:institutionId AS text))
+              AND (CAST(:roleName AS text) IS NULL OR EXISTS (
+                      SELECT 1 FROM user_roles ur
+                      JOIN role r ON r.id_role = ur.role_id
+                      WHERE r.name = CAST(:roleName AS text)
+                        AND ur.user_id = u.id_user))
+              AND (CAST(:enabled AS text) IS NULL OR u.enabled = CAST(:enabled AS boolean))
+              AND (CAST(:search AS text) IS NULL OR (
+                      lower(u.name)      LIKE lower(CONCAT('%', CAST(:search AS text), '%')) OR
+                      lower(u.last_name) LIKE lower(CONCAT('%', CAST(:search AS text), '%')) OR
+                      lower(u.email)     LIKE lower(CONCAT('%', CAST(:search AS text), '%'))))
             """,
             countQuery = """
-            SELECT COUNT(u) FROM Users u
-            WHERE u.isRoot = false
-            AND (:institutionId IS NULL OR u.institutionId = :institutionId)
-            AND (:roleName     IS NULL OR EXISTS (
-                    SELECT r FROM u.roles r WHERE r.name = :roleName))
-            AND (:enabled      IS NULL OR u.enabled = :enabled)
-            AND (:search       IS NULL OR (
-                    LOWER(u.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(u.lastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(u.email)     LIKE LOWER(CONCAT('%', :search, '%'))))
-            """)
+            SELECT COUNT(u.id_user) FROM users u
+            WHERE u.is_root = false
+              AND (CAST(:institutionId AS text) IS NULL OR u.institution_id = CAST(:institutionId AS text))
+              AND (CAST(:roleName AS text) IS NULL OR EXISTS (
+                      SELECT 1 FROM user_roles ur
+                      JOIN role r ON r.id_role = ur.role_id
+                      WHERE r.name = CAST(:roleName AS text)
+                        AND ur.user_id = u.id_user))
+              AND (CAST(:enabled AS text) IS NULL OR u.enabled = CAST(:enabled AS boolean))
+              AND (CAST(:search AS text) IS NULL OR (
+                      lower(u.name)      LIKE lower(CONCAT('%', CAST(:search AS text), '%')) OR
+                      lower(u.last_name) LIKE lower(CONCAT('%', CAST(:search AS text), '%')) OR
+                      lower(u.email)     LIKE lower(CONCAT('%', CAST(:search AS text), '%'))))
+            """,
+            nativeQuery = true)
     Page<Users> findAllWithFilters(
             @Param("institutionId") String institutionId,
             @Param("roleName")      String roleName,

@@ -54,8 +54,12 @@ public class UserController {
             @RequestParam(required = false) String role,
             @RequestParam(required = false) Boolean enabled,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String institutionId,
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
-        return userService.listUsers(role, enabled, search,
+        if (authContext.isRoot() && (institutionId == null || institutionId.trim().isEmpty())) {
+            throw new IllegalArgumentException("El usuario ROOT debe proveer el id de la institución (institutionId) para listar usuarios.");
+        }
+        return userService.listUsers(role, enabled, search, institutionId,
                 authContext.isRoot(), authContext.getInstitutionId(), pageable);
     }
 

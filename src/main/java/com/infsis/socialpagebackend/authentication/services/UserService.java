@@ -86,10 +86,10 @@ public class UserService {
 
     // ── Gestión genérica de usuarios ─────────────────────────────────────────
 
-    public Page<UserDetailDTO> listUsers(String roleFilter, Boolean enabled, String search,
+    public Page<UserDetailDTO> listUsers(String roleFilter, Boolean enabled, String search, String requestedInstitutionId,
                                           boolean callerIsRoot, String callerInstitutionId,
                                           Pageable pageable) {
-        String institutionId = callerIsRoot ? null : callerInstitutionId;
+        String institutionId = callerIsRoot ? requestedInstitutionId : callerInstitutionId;
         return userRepository
                 .findAllWithFilters(institutionId, roleFilter, enabled, search, pageable)
                 .map(userMapper::toDTO);
