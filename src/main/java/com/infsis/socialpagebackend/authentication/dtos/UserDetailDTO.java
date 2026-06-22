@@ -38,4 +38,6 @@ public class UserDetailDTO {
     private String role;
 
     private String institutionId;
+
+    private Boolean enabled;
 }

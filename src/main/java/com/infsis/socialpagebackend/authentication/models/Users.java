@@ -66,6 +66,9 @@ public class Users {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     public String getUuid() {
         return uuid;
     }

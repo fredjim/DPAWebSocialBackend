@@ -7,17 +7,25 @@ import com.infsis.socialpagebackend.authentication.services.RoleService;
 import com.infsis.socialpagebackend.authentication.services.UserService;
 import com.infsis.socialpagebackend.security.AuthContext;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @Validated
 public class UserController {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "lastName", "email");
 
     private final UserService userService;
     private final RoleService roleService;
@@ -40,5 +48,55 @@ public class UserController {
     @GetMapping("/permissions")
     public List<PermissionDTO> getAvailablePermissions() {
         return roleService.getAvailablePermissions(authContext.isRoot());
+    }
+
+    // ── Gestión genérica de usuarios ─────────────────────────────────────────
+
+    @PreAuthorize("hasAuthority('VIEW_USERS')")
+    @GetMapping
+    public Page<UserDetailDTO> listUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Boolean enabled,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String institutionId,
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        if (authContext.isRoot() && (institutionId == null || institutionId.trim().isEmpty())) {
+            throw new IllegalArgumentException("El usuario ROOT debe proveer el id de la institución (institutionId) para listar usuarios.");
+        }
+        pageable.getSort().forEach(order -> {
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new IllegalArgumentException(
+                    "Campo de ordenamiento inválido: '" + order.getProperty() +
+                    "'. Campos permitidos: name, lastName, email");
+            }
+        });
+        return userService.listUsers(role, enabled, search, institutionId,
+                authContext.isRoot(), authContext.getInstitutionId(), pageable);
+    }
+
+    @PreAuthorize("hasAuthority('VIEW_USERS')")
+    @GetMapping("/{uuid}")
+    public UserDetailDTO getUser(@PathVariable String uuid) {
+        return userService.getUser(uuid, authContext.isRoot(), authContext.getInstitutionId());
+    }
+
+    @PreAuthorize("hasAuthority('EDIT_USER')")
+    @PutMapping("/{uuid}")
+    public UserDetailDTO updateUser(@PathVariable String uuid,
+                                    @Valid @RequestBody UserDetailDTO dto) {
+        return userService.updateUser(uuid, dto, authContext.isRoot(), authContext.getInstitutionId());
+    }
+
+    @PreAuthorize("hasAuthority('EDIT_USER')")
+    @PatchMapping("/{uuid}/disable")
+    public UserDetailDTO toggleDisable(@PathVariable String uuid) {
+        return userService.toggleDisable(uuid, authContext.isRoot(), authContext.getInstitutionId());
+    }
+
+    @PreAuthorize("hasAuthority('DELETE_USER')")
+    @DeleteMapping("/{uuid}")
+    public Map<String, Object> deleteUser(@PathVariable String uuid) {
+        userService.deleteUser(uuid, authContext.isRoot(), authContext.getInstitutionId());
+        return Map.of("message", "User deleted successfully.");
     }
 }

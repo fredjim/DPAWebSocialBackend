@@ -42,6 +42,14 @@ public class CustomUsersDetailsService implements UserDetailsService {
                         .map(permiso -> new SimpleGrantedAuthority(permiso.getNamePermission())))
                 .collect(Collectors.toList());
 
-        return new User(usuario.getEmail(), usuario.getPassword(), authorities);
+        return new User(
+                usuario.getEmail(),
+                usuario.getPassword(),
+                usuario.isEnabled(),
+                true,
+                true,
+                true,
+                authorities
+        );
     }
 }
