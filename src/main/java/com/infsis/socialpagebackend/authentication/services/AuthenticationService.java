@@ -172,20 +172,19 @@ public class AuthenticationService {
     }
 
     /**
-     * Refresh token: valida el refresh token, genera nuevos tokens y revoca el anterior.
+     * Refresh token: valida el refresh token (raw, sin "Bearer "), genera nuevos tokens y revoca el anterior.
      */
-    public AuthResponseDTO refreshToken(String refreshTokenHeader) {
-        String refreshToken = extractToken(refreshTokenHeader);
-        Token tokenEntity = validarTokenActivo(refreshToken);
-        if (!isRefreshToken(refreshToken)) {
+    public AuthResponseDTO refreshToken(String rawRefreshToken) {
+        Token tokenEntity = validarTokenActivo(rawRefreshToken);
+        if (!isRefreshToken(rawRefreshToken)) {
             throw new IllegalArgumentException("Solo se permite el uso de refresh token en este endpoint.");
         }
-        String userEmail = jwtGenerator.obtenerUsernameDeJwt(refreshToken);
+        String userEmail = jwtGenerator.obtenerUsernameDeJwt(rawRefreshToken);
         if (userEmail == null) {
             throw new IllegalArgumentException("No se encontró el email en el token.");
         }
         Users user = findUserByEmail(userEmail);
-        if (!jwtGenerator.isTokenValid(refreshToken, user)) {
+        if (!jwtGenerator.isTokenValid(rawRefreshToken, user)) {
             throw new IllegalArgumentException("El refresh token es inválido o ha expirado.");
         }
         String accessToken = jwtGenerator.generarAccessToken(user);
@@ -197,11 +196,10 @@ public class AuthenticationService {
     }
 
     /**
-     * Logout: revoca el refresh token aunque esté expirado, si existe y no está ya revocado.
+     * Logout: revoca el refresh token (raw, sin "Bearer ") aunque esté expirado, si existe y no está ya revocado.
      */
-    public void logout(String refreshTokenHeader) {
-        String refreshToken = extractToken(refreshTokenHeader);
-        Token tokenEntity = tokenRepository.findByToken(refreshToken)
+    public void logout(String rawRefreshToken) {
+        Token tokenEntity = tokenRepository.findByToken(rawRefreshToken)
                 .orElseThrow(() -> new IllegalArgumentException("El token no existe en la base de datos."));
         if (tokenEntity.getIsRevoked()) {
             throw new IllegalArgumentException("El token ya ha sido revocado.");
@@ -271,12 +269,8 @@ public class AuthenticationService {
         return header.substring(7);
     }
 
-    /**
-     * Valida si el token es de tipo refresh (puedes mejorar con claims personalizados).
-     */
     private boolean isRefreshToken(String token) {
-        // Mejorable: puedes agregar un claim "type" en el JWT y verificarlo aquí
-        return true;
+        return "refresh".equals(jwtGenerator.extractTokenType(token));
     }
 
     // ─── Admin user management (ROOT only) ───────────────────────────────────
