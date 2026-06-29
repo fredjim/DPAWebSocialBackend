@@ -34,11 +34,11 @@ public class JwtGenerator {
     }
 
     public String generarAccessToken(Users user) {
-        return generarToken(user, jwtExpirationTime);
+        return generarToken(user, jwtExpirationTime, "access");
     }
 
     public String generarRefreshToken(Users user) {
-        return generarToken(user, jwtRefreshExpirationTime);
+        return generarToken(user, jwtRefreshExpirationTime, "refresh");
     }
 
     public long getExpirationTime() {
@@ -73,7 +73,11 @@ public class JwtGenerator {
         return extractClaims(token).get("institutionId", String.class);
     }
 
-    private String generarToken(Users user, long expirationTime) {
+    public String extractTokenType(String token) {
+        return extractClaims(token).get("type", String.class);
+    }
+
+    private String generarToken(Users user, long expirationTime, String type) {
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("userId", user.getUuid())
@@ -81,6 +85,7 @@ public class JwtGenerator {
                 .claim("name", user.getName())
                 .claim("institutionId", user.getInstitutionId())
                 .claim("isRoot", user.isRoot())
+                .claim("type", type)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(SignatureAlgorithm.HS512, ConstantsSecurity.JWT_FIRMA)
