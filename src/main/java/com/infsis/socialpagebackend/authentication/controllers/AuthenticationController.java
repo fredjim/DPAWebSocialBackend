@@ -18,11 +18,13 @@ import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import com.infsis.socialpagebackend.authentication.services.AuthenticationService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +48,13 @@ public class AuthenticationController {
     private static final String REGISTERED_USER_EMAIL_MESSAGE = "The user email is already registered";
     private static final String CLOSED_USER_SESSION_MESSAGE = "User session closed successfully";
     private static final String ROLE_STUDENT = "STUDENT";
+    private static final String REFRESH_COOKIE_NAME = "refresh_token";
+
+    @Value("${security.jwt.refresh-expiration-time}")
+    private long refreshExpirationTime;
+
+    @Value("${app.auth.cookie.secure:false}")
+    private boolean cookieSecure;
 
     @Autowired
     private TokenRepository tokenRepository;
@@ -118,25 +128,35 @@ public class AuthenticationController {
     }
 
     @PostMapping("/auth/root/login")
-    public ResponseEntity<AuthResponseDTO> rootLogin(@RequestBody UserLoginDTO userLoginDTO) {
+    public ResponseEntity<AuthResponseDTO> rootLogin(
+            @RequestBody UserLoginDTO userLoginDTO,
+            HttpServletResponse httpResponse) {
         AuthResponseDTO response = authenticationService.rootLogin(userLoginDTO);
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(response.getRefreshToken()).toString());
+        response.setRefreshToken(null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //Método para poder logear un usuario y obtener un token
     @PostMapping("/auth/login")
     public ResponseEntity<AuthResponseDTO> login(
             @RequestBody UserLoginDTO userLoginDTO,
-            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug,
+            HttpServletResponse httpResponse) {
         String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
         AuthResponseDTO response = authenticationService.login(userLoginDTO, tenantId);
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(response.getRefreshToken()).toString());
+        response.setRefreshToken(null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
-        String refreshTokenHeader = request.getHeader("Authorization");
-        authenticationService.logout(refreshTokenHeader);
+    public ResponseEntity<Map<String, Object>> logout(
+            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
+            HttpServletResponse httpResponse) {
+        if (refreshToken != null) {
+            authenticationService.logout(refreshToken);
+        }
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         SecurityContextHolder.clearContext();
         Map<String, Object> response = new HashMap<>();
         response.put("message", CLOSED_USER_SESSION_MESSAGE);
@@ -144,8 +164,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<AuthResponseDTO> refreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) final String refreshToken) {
+    public ResponseEntity<AuthResponseDTO> refreshToken(
+            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
+            HttpServletResponse httpResponse) {
+        if (refreshToken == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         AuthResponseDTO response = authenticationService.refreshToken(refreshToken);
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(response.getRefreshToken()).toString());
+        response.setRefreshToken(null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -206,5 +233,27 @@ public class AuthenticationController {
         passwordResetService.resetPassword(dto.token(), dto.newPassword());
         return ResponseEntity.ok(Collections.singletonMap("message",
                 "Contraseña actualizada correctamente."));
+    }
+
+    // ─── Cookie helpers ──────────────────────────────────────────────────────
+
+    private ResponseCookie buildRefreshCookie(String token) {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .path("/api/auth")
+                .maxAge(Duration.ofMillis(refreshExpirationTime))
+                .build();
+    }
+
+    private ResponseCookie clearRefreshCookie() {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .path("/api/auth")
+                .maxAge(0)
+                .build();
     }
 }
