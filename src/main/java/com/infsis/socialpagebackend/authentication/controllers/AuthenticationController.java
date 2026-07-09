@@ -56,6 +56,9 @@ public class AuthenticationController {
     @Value("${app.auth.cookie.secure:false}")
     private boolean cookieSecure;
 
+    @Value("${app.auth.cookie.same-site:Strict}")
+    private String cookieSameSite;
+
     @Autowired
     private TokenRepository tokenRepository;
 
@@ -241,7 +244,7 @@ public class AuthenticationController {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .path("/api/auth")
                 .maxAge(Duration.ofMillis(refreshExpirationTime))
                 .build();
@@ -251,7 +254,7 @@ public class AuthenticationController {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .path("/api/auth")
                 .maxAge(0)
                 .build();
