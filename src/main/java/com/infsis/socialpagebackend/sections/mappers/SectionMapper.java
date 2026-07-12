@@ -21,6 +21,7 @@ public class SectionMapper {
         sectionDTO.setUser_id(section.getUsers().getUuid());
         sectionDTO.setInstitution_id(section.getInstitution().getUuid());
         sectionDTO.setNav_item_id(section.getNavItem() != null ? section.getNavItem().getUuid() : null);
+        sectionDTO.setOrderIndex(section.getOrderIndex());
 
         return sectionDTO;
     }
