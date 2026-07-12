@@ -10,7 +10,7 @@ WITH ordered AS (
            ROW_NUMBER() OVER (
                PARTITION BY institution_id, nav_item_id
                ORDER BY created_date ASC, id ASC
-           ) - 1 AS rn
+           ) AS rn
     FROM public.section
 )
 UPDATE public.section s
