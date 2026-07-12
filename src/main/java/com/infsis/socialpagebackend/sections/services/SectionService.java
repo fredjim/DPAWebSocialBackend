@@ -95,6 +95,7 @@ public class SectionService {
                 .orElseThrow(() -> new NotFoundException("Section not found with path: ", path));
     }
 
+    @Transactional
     public SectionDTO saveSection(SectionDTO sectionDTO) {
 
         String tenantId = TenantContext.getCurrentTenant();
@@ -116,10 +117,43 @@ public class SectionService {
             navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
         }
 
+        Integer requestedOrderIndex = sectionDTO.getOrderIndex();
+        int orderIndex = resolveOrderIndex(requestedOrderIndex, navItem, tenantId);
+        if (requestedOrderIndex != null) {
+            // Posición explícita: hacer espacio desplazando +1 lo que ya ocupa esa posición en adelante
+            makeRoomAt(navItem, tenantId, orderIndex, null);
+        }
+
         Section section = sectionMapper.getSection(sectionDTO, institution, user, navItem);
+        section.setOrderIndex(orderIndex);
         sectionRepository.save(section);
 
         return sectionMapper.toDTO(section);
+    }
+
+    private int resolveOrderIndex(Integer requestedOrderIndex, NavItem navItem, String institutionUuid) {
+        if (requestedOrderIndex != null) return requestedOrderIndex;
+
+        Integer maxOrder = navItem != null
+                ? sectionRepository.findMaxOrderIndexByNavItemUuid(navItem.getUuid())
+                : sectionRepository.findMaxOrderIndexByInstitutionUuidAndNoNavItem(institutionUuid);
+        return maxOrder + 1;
+    }
+
+    private void makeRoomAt(NavItem navItem, String institutionUuid, int fromIndex, String excludeUuid) {
+        if (navItem != null) {
+            sectionRepository.incrementOrderIndexFrom(navItem.getUuid(), fromIndex, excludeUuid);
+        } else {
+            sectionRepository.incrementOrderIndexFromNoNavItem(institutionUuid, fromIndex, excludeUuid);
+        }
+    }
+
+    private void closeGapAfter(NavItem navItem, String institutionUuid, int afterIndex, String excludeUuid) {
+        if (navItem != null) {
+            sectionRepository.decrementOrderIndexAfter(navItem.getUuid(), afterIndex, excludeUuid);
+        } else {
+            sectionRepository.decrementOrderIndexAfterNoNavItem(institutionUuid, afterIndex, excludeUuid);
+        }
     }
 
     @Transactional
@@ -159,6 +193,7 @@ public class SectionService {
         }
 
         sectionRepository.hardDeleteByUuid(sectionUuid);
+        closeGapAfter(section.getNavItem(), section.getInstitution().getUuid(), section.getOrderIndex(), sectionUuid);
         return dto;
     }
 
@@ -171,6 +206,7 @@ public class SectionService {
         };
     }
 
+    @Transactional
     public SectionDTO updateSection(String sectionUuid, SectionDTO sectionDTO) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -192,9 +228,39 @@ public class SectionService {
             foundSection.setPath(sectionDTO.getPath());
         }
 
+        boolean navItemChanged = false;
+        NavItem oldNavItem = foundSection.getNavItem();
+        NavItem targetNavItem = oldNavItem;
         if (sectionDTO.getNav_item_id() != null) {
-            NavItem navItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
-            foundSection.setNavItem(navItem);
+            String currentNavItemUuid = oldNavItem != null ? oldNavItem.getUuid() : null;
+            if (!sectionDTO.getNav_item_id().equals(currentNavItemUuid)) {
+                targetNavItem = navItemRepository.findOneByUuid(sectionDTO.getNav_item_id());
+                navItemChanged = true;
+            }
+        }
+
+        Integer requestedOrderIndex = sectionDTO.getOrderIndex();
+        boolean orderChanged = requestedOrderIndex != null && !requestedOrderIndex.equals(foundSection.getOrderIndex());
+
+        if (navItemChanged || orderChanged) {
+            String institutionUuid = foundSection.getInstitution().getUuid();
+            int oldOrderIndex = foundSection.getOrderIndex();
+
+            // 1. Cerrar el hueco que deja la section en su posición/grupo actual
+            closeGapAfter(oldNavItem, institutionUuid, oldOrderIndex, foundSection.getUuid());
+
+            // 2. Resolver posición destino (explícita o al final del grupo destino)
+            int newOrderIndex = resolveOrderIndex(requestedOrderIndex, targetNavItem, institutionUuid);
+
+            // 3. Si la posición fue explícita, hacer espacio en el grupo destino
+            if (requestedOrderIndex != null) {
+                makeRoomAt(targetNavItem, institutionUuid, newOrderIndex, foundSection.getUuid());
+            }
+
+            foundSection.setOrderIndex(newOrderIndex);
+            if (navItemChanged) {
+                foundSection.setNavItem(targetNavItem);
+            }
         }
 
         foundSection.setDate(sectionDTO.getDate());
