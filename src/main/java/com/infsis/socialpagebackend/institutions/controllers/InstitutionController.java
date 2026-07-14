@@ -9,6 +9,10 @@ import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.security.AuthContext;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -72,17 +76,23 @@ public class InstitutionController {
     }
 
     @GetMapping("/{institutionUuid}/photos")
-    public List<MediaItemDTO> getPhotosByInstitution(@PathVariable String institutionUuid) {
-        return postService.getMediasInstitution(institutionUuid, IMAGE);
+    public Page<MediaItemDTO> getPhotosByInstitution(
+            @PathVariable String institutionUuid,
+            @PageableDefault(size = 12, sort = "post_date", direction = Sort.Direction.DESC) Pageable pageable) {
+        return postService.getMediasInstitution(institutionUuid, IMAGE, pageable);
     }
 
     @GetMapping("/{institutionUuid}/videos")
-    public List<MediaItemDTO> getVideosByInstitution(@PathVariable String institutionUuid) {
-        return postService.getMediasInstitution(institutionUuid, VIDEO);
+    public Page<MediaItemDTO> getVideosByInstitution(
+            @PathVariable String institutionUuid,
+            @PageableDefault(size = 9, sort = "post_date", direction = Sort.Direction.DESC) Pageable pageable) {
+        return postService.getMediasInstitution(institutionUuid, VIDEO, pageable);
     }
 
     @GetMapping("/{institutionUuid}/documents")
-    public List<MediaItemDTO> getDocsByInstitution(@PathVariable String institutionUuid) {
-        return postService.getMediasInstitution(institutionUuid, DOCUMENT);
+    public Page<MediaItemDTO> getDocsByInstitution(
+            @PathVariable String institutionUuid,
+            @PageableDefault(size = 20, sort = "post_date", direction = Sort.Direction.DESC) Pageable pageable) {
+        return postService.getMediasInstitution(institutionUuid, DOCUMENT, pageable);
     }
 }

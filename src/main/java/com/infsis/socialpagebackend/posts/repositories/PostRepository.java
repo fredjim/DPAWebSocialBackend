@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.posts.repositories;
 
+import com.infsis.socialpagebackend.posts.models.Media;
 import com.infsis.socialpagebackend.posts.models.Post;
 
 import java.util.List;
@@ -25,4 +26,21 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     @Query("SELECT p FROM Post p WHERE p.institution.uuid = :tenantId AND LOWER(p.content.text.text) LIKE LOWER(CONCAT('%', :text, '%')) ORDER BY p.createdDate DESC")
     List<Post> searchPostsByTextAndTenant(@Param("text") String text, @Param("tenantId") String tenantId);
+
+    @Query(
+        value = "SELECT m FROM Post p JOIN p.content.media m " +
+                "WHERE p.institution.uuid = :institutionUuid " +
+                "AND p.deleted = false " +
+                "AND LOWER(m.file_type) = LOWER(:type) " +
+                "AND m.uploadedFile IS NOT NULL",
+        countQuery = "SELECT COUNT(m) FROM Post p JOIN p.content.media m " +
+                     "WHERE p.institution.uuid = :institutionUuid " +
+                     "AND p.deleted = false " +
+                     "AND LOWER(m.file_type) = LOWER(:type) " +
+                     "AND m.uploadedFile IS NOT NULL"
+    )
+    Page<Media> findMediaPagedByInstitutionAndType(
+            @Param("institutionUuid") String institutionUuid,
+            @Param("type") String type,
+            Pageable pageable);
 }
