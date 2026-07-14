@@ -1,23 +1,17 @@
 package com.infsis.socialpagebackend.institutions.services;
 
-import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.institutions.dtos.InstitutionDTO;
 import com.infsis.socialpagebackend.institutions.mappers.InstitutionMapper;
 import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
-import com.infsis.socialpagebackend.posts.dtos.MediaItemDTO;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
-import com.infsis.socialpagebackend.posts.models.Media;
-import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
-import com.infsis.socialpagebackend.posts.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,13 +23,7 @@ public class InstitutionService {
     private InstitutionRepository institutionRepository;
 
     @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
     private InstitutionMapper institutionMapper;
-
-    @Autowired
-    private AppUrlProperties appUrlProperties;
 
     @Autowired
     private UploadedFileRepository uploadedFileRepository;
@@ -154,23 +142,5 @@ public class InstitutionService {
         }
 
         return optionalInstitution;
-    }
-
-    public List<MediaItemDTO> getMediasInstitution(String institutionUuid, String type) {
-        List<Post> posts = postRepository.findAll();
-        List<MediaItemDTO> mediaItems = new ArrayList<>();
-        for (Post post : posts) {
-            if (post.getInstitution().getUuid().equals(institutionUuid)) {
-                for (Media media : post.getContent().getMedia()) {
-                    if (type.equalsIgnoreCase(media.getFile_type()) && media.getUploadedFile() != null) {
-                        MediaItemDTO mediaItemDTO = new MediaItemDTO();
-                        mediaItemDTO.setUuid_post(post.getUuid());
-                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getUploadedFile().getUrlResource()));
-                        mediaItems.add(mediaItemDTO);
-                    }
-                }
-            }
-        }
-        return mediaItems;
     }
 }

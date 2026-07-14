@@ -626,22 +626,18 @@ public class PostService {
                 .isEmpty();
     }
 
-    public List<MediaItemDTO> getMediasInstitution(String institutionUuid, String type) {
-        List<Post> posts = postRepository.findAll();
-        List<MediaItemDTO> mediaItems = new ArrayList<>();
-        for (Post post : posts) {
-            if (post.getInstitution().getUuid().equals(institutionUuid)) {
-                for (Media media : post.getContent().getMedia()) {
-                    if (type.equalsIgnoreCase(media.getFile_type()) && media.getUploadedFile() != null) {
-                        MediaItemDTO mediaItemDTO = new MediaItemDTO();
-                        mediaItemDTO.setUuid_post(post.getUuid());
-                        mediaItemDTO.setPath(appUrlProperties.buildResourceUrl(media.getUploadedFile().getUrlResource()));
-                        mediaItems.add(mediaItemDTO);
-                    }
-                }
-            }
-        }
-        return mediaItems;
+    public Page<MediaItemDTO> getMediasInstitution(String institutionUuid, String type, Pageable pageable) {
+        Page<Media> mediaPage = postRepository.findMediaPagedByInstitutionAndType(institutionUuid, type, pageable);
+        return mediaPage.map(media -> {
+            MediaItemDTO dto = new MediaItemDTO();
+            dto.setUuid_post(media.getContent().getPost().getUuid());
+            dto.setFileUuid(media.getUploadedFile().getUuid());
+            dto.setPath(appUrlProperties.buildResourceUrl(media.getUploadedFile().getUrlResource()));
+            dto.setFileName(media.getUploadedFile().getName());
+            dto.setMimeType(media.getUploadedFile().getMimeType());
+            dto.setFileType(media.getFile_type());
+            return dto;
+        });
     }
 
     public List<PostDTO> getPagedPosts(int page, int size) {
