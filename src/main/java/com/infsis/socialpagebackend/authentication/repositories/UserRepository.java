@@ -26,6 +26,10 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
 
     Optional<Users> findByUuid(String uuid);
 
+    Optional<Users> findByPhotoProfileFile_Uuid(String uuid);
+
+    Optional<Users> findByPhotoCoverFile_Uuid(String uuid);
+
     @Query("SELECT u FROM Users u JOIN u.roles r WHERE r.name = ?1")
     List<Users> findAllByRoleName(String roleName);
 
