@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.medias.services;
 
+import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.enums.FileCategory;
 import com.infsis.socialpagebackend.enums.FileStatus;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
@@ -48,6 +49,9 @@ public class FileStorageService {
 
     @Autowired
     private MediaRepository mediaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Store a batch of files.
@@ -133,6 +137,7 @@ public class FileStorageService {
         try {
             mediaRepository.findByUploadedFileUuid(uuid)
                     .ifPresent(mediaRepository::delete);
+            clearUserPhotoReferences(uuid);
             fileStorageStrategy.deleteFile(uuid, directory);
             uploadedFileRepository.delete(file);
             logger.info("File deleted uuid={}", uuid);
@@ -173,6 +178,7 @@ public class FileStorageService {
         String directory = resolveDirectory(file.getUrlResource());
         try {
             mediaRepository.findByUploadedFileUuid(uuid).ifPresent(mediaRepository::delete);
+            clearUserPhotoReferences(uuid);
             fileStorageStrategy.deleteFile(uuid, directory);
             uploadedFileRepository.delete(file);
             logger.info("File deleted (auto-dir) uuid={}", uuid);
@@ -199,6 +205,25 @@ public class FileStorageService {
             logger.warn("Error deleting physical file uuid={}, removing DB record anyway", uuid);
             uploadedFileRepository.delete(file);
         }
+    }
+
+    /**
+     * Detach a deleted file from any user that had it set as profile or cover photo.
+     * The photo_*_file_id FK is nulled by the DB (ON DELETE SET NULL), but the legacy
+     * photo_*_path string column is independent and must be cleared here, otherwise
+     * UserMapper falls back to the now-dangling path once the FK is null.
+     */
+    private void clearUserPhotoReferences(String uuid) {
+        userRepository.findByPhotoProfileFile_Uuid(uuid).ifPresent(user -> {
+            user.setPhotoProfileFile(null);
+            user.setPhoto_profile_path(null);
+            userRepository.save(user);
+        });
+        userRepository.findByPhotoCoverFile_Uuid(uuid).ifPresent(user -> {
+            user.setPhotoCoverFile(null);
+            user.setPhoto_cover_path(null);
+            userRepository.save(user);
+        });
     }
 
     private String resolveDirectory(String urlResource) {
