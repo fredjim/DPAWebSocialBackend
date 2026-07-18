@@ -4,6 +4,7 @@ import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.comments.repositories.CommentRepository;
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.moderation.dtos.ModerationResponse;
 import com.infsis.socialpagebackend.moderation.enums.ContentType;
 import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
@@ -51,6 +52,9 @@ public class ReplyService {
 
     @Autowired
     private ModerationPipeline moderationPipeline;
+
+    @Autowired
+    private AppUrlProperties appUrlProperties;
 
     public List<ReplyDTO> getRepliesByCommentUuid(String commentUuid) {
         List<Reply> replies = replyRepository.findByCommentUuid(commentUuid);
@@ -142,7 +146,7 @@ public class ReplyService {
         dto.setContent(reply.getContent());
         dto.setName(reply.getUser().getName());
         dto.setLastName(reply.getUser().getLastName());
-        dto.setUser_photo(reply.getUser().getPhoto_profile_path());
+        dto.setUser_photo(buildUrlIfPresent(reply.getUser().getPhoto_profile_path()));
         dto.setParentReplyUuid(reply.getParentReply() != null ? reply.getParentReply().getUuid() : null);
     
        
@@ -151,8 +155,15 @@ public class ReplyService {
         
         return dto;
     }
-    
-    
+
+    private String buildUrlIfPresent(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        return appUrlProperties.buildResourceUrl(path);
+    }
+
+
     private ReactionCounterDTO getReplyReactionCounterDTO(Reply reply) {
 
         ReactionCounterDTO reactionCounterDTO = new ReactionCounterDTO();
