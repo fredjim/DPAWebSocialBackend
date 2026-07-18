@@ -474,11 +474,18 @@ public class PostService {
 
         if (postUserReaction.isPresent()) {
             reactionUserDTO.setUser_name(user.getName() + " " + user.getLastName());
-            reactionUserDTO.setUser_photo(user.getPhoto_profile_path());
+            reactionUserDTO.setUser_photo(buildUrlIfPresent(user.getPhoto_profile_path()));
             reactionUserDTO.setUser_reaction(postUserReaction.get().getEmoji_type().getEmoji_name());
         }
 
         return reactionUserDTO;
+    }
+
+    private String buildUrlIfPresent(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        return appUrlProperties.buildResourceUrl(path);
     }
 
     public CommentCounterDTO getCommentCounter(String postId) {

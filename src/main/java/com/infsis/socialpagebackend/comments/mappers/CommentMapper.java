@@ -1,16 +1,21 @@
 package com.infsis.socialpagebackend.comments.mappers;
 
 import com.infsis.socialpagebackend.comments.dtos.CommentDTO;
+import com.infsis.socialpagebackend.configuration.AppUrlProperties;
 import com.infsis.socialpagebackend.enums.CommentState;
 import com.infsis.socialpagebackend.comments.models.Comment;
 import com.infsis.socialpagebackend.posts.models.Post;
 import com.infsis.socialpagebackend.authentication.models.Users;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @Component
 public class CommentMapper {
+
+    @Autowired
+    private AppUrlProperties appUrlProperties;
 
     public CommentDTO toDTO(Comment comment) {
         CommentDTO commentDTO = new CommentDTO();
@@ -21,9 +26,16 @@ public class CommentMapper {
         commentDTO.setState(comment.getState());
         commentDTO.setDate(comment.getComment_date());
         commentDTO.setUser_name(comment.getUser().getName() + " " + comment.getUser().getLastName());
-        commentDTO.setUser_photo(comment.getUser().getPhoto_profile_path());
+        commentDTO.setUser_photo(buildUrlIfPresent(comment.getUser().getPhoto_profile_path()));
 
         return commentDTO;
+    }
+
+    private String buildUrlIfPresent(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        return appUrlProperties.buildResourceUrl(path);
     }
     
 
