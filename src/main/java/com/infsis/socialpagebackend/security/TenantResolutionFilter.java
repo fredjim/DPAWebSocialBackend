@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Resuelve el tenant (institution_id) de cada request y lo carga en TenantContext.
@@ -38,6 +40,13 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
         try {
+            // traceId: reutiliza X-Request-Id si el cliente/proxy lo envía; si no, genera uno.
+            String traceId = request.getHeader("X-Request-Id");
+            if (traceId == null || traceId.isBlank()) {
+                traceId = UUID.randomUUID().toString();
+            }
+            MDC.put("traceId", traceId);
+
             String tenantId = resolveFromJwt(request);
 
             if (tenantId == null) {
@@ -46,11 +55,19 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
 
             if (tenantId != null) {
                 TenantContext.setCurrentTenant(tenantId);
+                MDC.put("institutionId", tenantId);
+            }
+
+            String userId = resolveUserIdFromJwt(request);
+            if (userId != null) {
+                MDC.put("userId", userId);
             }
 
             chain.doFilter(request, response);
         } finally {
             TenantContext.clear();
+            // Imprescindible: limpiar el MDC para no filtrar contexto entre requests del pool de hilos.
+            MDC.clear();
         }
     }
 
@@ -61,6 +78,16 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
             return jwtGenerator.extractInstitutionId(bearer.substring(7));
         } catch (Exception e) {
             // Token malformado o expirado — Spring Security lo rechazará después
+            return null;
+        }
+    }
+
+    private String resolveUserIdFromJwt(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer == null || !bearer.startsWith("Bearer ")) return null;
+        try {
+            return jwtGenerator.extractUserId(bearer.substring(7));
+        } catch (Exception e) {
             return null;
         }
     }

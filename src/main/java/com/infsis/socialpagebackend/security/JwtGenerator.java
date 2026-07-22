@@ -73,6 +73,10 @@ public class JwtGenerator {
         return extractClaims(token).get("institutionId", String.class);
     }
 
+    public String extractUserId(String token) {
+        return extractClaims(token).get("userId", String.class);
+    }
+
     public String extractTokenType(String token) {
         return extractClaims(token).get("type", String.class);
     }
