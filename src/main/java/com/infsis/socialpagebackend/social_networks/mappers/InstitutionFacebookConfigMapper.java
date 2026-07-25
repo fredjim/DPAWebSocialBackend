@@ -30,6 +30,22 @@ public class InstitutionFacebookConfigMapper {
         return dto;
     }
 
+    /**
+     * La fila de configuración existe pero su token no se pudo descifrar
+     * (clave incorrecta o token corrupto). Se expone como no configurada para
+     * que el frontend solicite reconfigurar, conservando los datos no sensibles.
+     */
+    public FacebookConfigResponseDTO toInvalidTokenDTO(InstitutionFacebookConfig config) {
+        FacebookConfigResponseDTO dto = new FacebookConfigResponseDTO();
+        dto.setUuid(config.getUuid());
+        dto.setInstitution_id(config.getInstitution().getUuid());
+        dto.setPage_id(config.getPageId());
+        dto.setConfigured(false);
+        dto.setEnabled(false);
+        dto.setToken_hint("INVALID");
+        return dto;
+    }
+
     public InstitutionFacebookConfig toEntity(FacebookConfigRequestDTO requestDTO,
                                                Institution institution,
                                                String encryptedToken) {

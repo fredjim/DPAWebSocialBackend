@@ -57,7 +57,7 @@ public class AesTokenEncryptor {
 
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("Error decrypting token", e);
+            throw new TokenDecryptionException("Error decrypting token", e);
         }
     }
 }
