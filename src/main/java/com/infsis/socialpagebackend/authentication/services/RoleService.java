@@ -7,6 +7,7 @@ import com.infsis.socialpagebackend.authentication.models.Role;
 import com.infsis.socialpagebackend.authentication.repositories.PermissionRepository;
 import com.infsis.socialpagebackend.authentication.repositories.RoleRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class RoleService {
 
     private final RoleRepository roleRepository;
@@ -43,7 +45,9 @@ public class RoleService {
         role.setSystemRole(false);
         role.setPermisos(permisos);
 
-        return toDTO(roleRepository.save(role));
+        Role saved = roleRepository.save(role);
+        log.info("ROL_CREADO rolId={} nombre={} permisos={}", saved.getIdRole(), saved.getName(), dto.getPermissionIds());
+        return toDTO(saved);
     }
 
     public RoleDTO updateRole(Long id, RoleDTO dto) {
@@ -57,7 +61,9 @@ public class RoleService {
         Set<Permissions> permisos = resolveAndValidatePermissions(dto.getPermissionIds());
         role.setPermisos(permisos);
 
-        return toDTO(roleRepository.save(role));
+        Role saved = roleRepository.save(role);
+        log.info("ROL_MODIFICADO rolId={} nombre={} permisos={}", saved.getIdRole(), saved.getName(), dto.getPermissionIds());
+        return toDTO(saved);
     }
 
     public void deleteRole(Long id) {
@@ -69,6 +75,7 @@ public class RoleService {
         }
 
         roleRepository.delete(role);
+        log.warn("ROL_ELIMINADO rolId={} nombre={}", id, role.getName());
     }
 
     public List<PermissionDTO> getAvailablePermissions(boolean callerIsRoot) {

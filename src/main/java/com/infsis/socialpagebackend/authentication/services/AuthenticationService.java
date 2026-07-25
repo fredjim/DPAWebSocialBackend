@@ -15,6 +15,7 @@ import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.security.JwtGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Slf4j
 public class AuthenticationService {
 
     private final UserRepository userRepository;
@@ -124,6 +126,7 @@ public class AuthenticationService {
         String refreshToken = jwtGenerator.generarRefreshToken(user);
         revokeAllUserRefreshTokens(user);
         saveRefreshTokenToDatabase(user, refreshToken);
+        log.info("LOGIN_ROOT_EXITOSO userId={} email={}", user.getUuid(), user.getEmail());
         return new AuthResponseDTO(accessToken, refreshToken);
     }
 
@@ -148,6 +151,7 @@ public class AuthenticationService {
         String refreshToken = jwtGenerator.generarRefreshToken(user);
         revokeAllUserRefreshTokens(user);
         saveRefreshTokenToDatabase(user, refreshToken);
+        log.info("LOGIN_EXITOSO userId={} email={} institucionId={}", user.getUuid(), user.getEmail(), tenantId);
         return new AuthResponseDTO(accessToken, refreshToken);
     }
 
@@ -206,6 +210,7 @@ public class AuthenticationService {
         }
         tokenEntity.setIsRevoked(true);
         tokenRepository.save(tokenEntity);
+        log.info("LOGOUT userId={}", tokenEntity.getUser().getUuid());
     }
 
     // --- Métodos privados ---
@@ -223,10 +228,13 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
         } catch (DisabledException e) {
+            log.warn("LOGIN_FALLIDO email={} motivo=cuenta_deshabilitada", email);
             throw new AccountDisabledException("La cuenta está deshabilitada. Contacta al administrador.");
         } catch (BadCredentialsException e) {
+            log.warn("LOGIN_FALLIDO email={} motivo=credenciales_invalidas", email);
             throw new InvalidCredentialsException("Credenciales incorrectas. Verifica tu email y contraseña.");
         } catch (AuthenticationException e) {
+            log.warn("LOGIN_FALLIDO email={} motivo=error_autenticacion", email);
             throw new InvalidCredentialsException("Error de autenticación: " + e.getMessage());
         }
     }
@@ -293,6 +301,7 @@ public class AuthenticationService {
                 .orElseThrow(() -> new NotFoundException("Admin user", uuid));
         updateAdminFields(admin, dto);
         userRepository.save(admin);
+        log.info("ADMIN_MODIFICADO targetUserId={} email={}", admin.getUuid(), admin.getEmail());
         UserDetailDTO result = userMapper.toDTO(admin);
         result.setRole("ADMIN");
         return result;
@@ -302,6 +311,7 @@ public class AuthenticationService {
         Users admin = userRepository.findByUuidAndRoleName(uuid, "ADMIN")
                 .orElseThrow(() -> new NotFoundException("Admin user", uuid));
         userRepository.delete(admin);
+        log.warn("ADMIN_ELIMINADO targetUserId={} email={}", admin.getUuid(), admin.getEmail());
     }
 
     private void updateAdminFields(Users user, UserDetailDTO dto) {
