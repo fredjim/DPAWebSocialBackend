@@ -133,8 +133,6 @@ public class ArticleService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
-        log.info("User id :" + user.getUuid());
-
         ArticleDTO resDTO = new ArticleDTO();
         String tenantId = TenantContext.getCurrentTenant();
         Article stub = new Article();
@@ -156,6 +154,8 @@ public class ArticleService {
             articleRepository.save(article);
 
             resDTO = articleMapper.toDTO(article);
+            log.info("ARTICLE_CREADO articleUuid={} titulo={} autorId={} institucionId={}",
+                    article.getUuid(), article.getTitle(), user.getUuid(), tenantId);
         }
 
         return resDTO;
@@ -190,6 +190,7 @@ public class ArticleService {
 
         articleRepository.delete(article);
 
+        log.warn("ARTICLE_ELIMINADO articleUuid={} titulo={}", articleUuid, dto.getTitle());
         return dto;
     }
 
@@ -299,6 +300,7 @@ public class ArticleService {
 
         articleRepository.saveAndFlush(foundArticle);
         entityManager.clear();
+        log.info("ARTICLE_MODIFICADO articleUuid={} titulo={}", articleUuid, foundArticle.getTitle());
         return articleMapper.toDTO(articleRepository.findOneByUuid(articleUuid));
 
     }

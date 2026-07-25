@@ -164,8 +164,6 @@ public class PostService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
-        log.info("User id :" + user.getUuid());
-
         Post post = new Post();
         PostDTO resDTO = new PostDTO();
         List<Media> savedMedias = new ArrayList<>();
@@ -184,6 +182,7 @@ public class PostService {
 
             resDTO = postMapper.toDTO(post, getPostReactionCounterDTO(post), getCommentCounter(post.getUuid()));
 
+            log.info("POST_CREADO postUuid={} autorId={} institucionId={}", post.getUuid(), user.getUuid(), tenantId);
         }
 
         // Publish in Facebook
@@ -256,6 +255,7 @@ public class PostService {
                 .setParameter("id", postId)
                 .executeUpdate();
 
+        log.warn("POST_ELIMINADO postUuid={}", postUuid);
         return dto;
     }
     private void publishToFacebook(PostDTO postDTO, List<Media> savedMedias,
@@ -574,6 +574,7 @@ public class PostService {
         existingPost.setPost_date(postDTO.getDate());
 
         Post savedPost = postRepository.save(existingPost);
+        log.info("POST_MODIFICADO postUuid={}", postUuid);
         return postMapper.toDTO(savedPost, getPostReactionCounterDTO(savedPost), getCommentCounter(savedPost.getUuid()));
     }
 

@@ -3,6 +3,7 @@ package com.infsis.socialpagebackend.authentication.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.security.ConstantsSecurity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.util.Base64;
 
 @Service
+@Slf4j
 public class PasswordResetService {
 
     @Value("${app.email.reset-url}")
@@ -40,6 +42,7 @@ public class PasswordResetService {
     public void requestReset(String email) {
         // Siempre responde OK — nunca revela si el email existe (anti-enumeration)
         userRepository.findByEmail(email).ifPresent(user -> {
+            log.info("RESET_PASSWORD_SOLICITADO userId={} email={}", user.getUuid(), user.getEmail());
             String token = buildToken(user);
             String link  = resetUrl + "?token=" + token;
 
@@ -89,6 +92,7 @@ public class PasswordResetService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        log.info("RESET_PASSWORD_COMPLETADO userId={} email={}", user.getUuid(), user.getEmail());
     }
 
     private String buildToken(Users user) {

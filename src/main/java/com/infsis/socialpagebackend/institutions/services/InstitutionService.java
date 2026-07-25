@@ -8,6 +8,7 @@ import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class InstitutionService {
 
     @Autowired
@@ -57,6 +59,8 @@ public class InstitutionService {
         institution.setBackgroundFile(resolveFileFromUuid(institutionDTO.getBackgroundFileUuid()));
         institutionRepository.save(institution);
 
+        log.info("INSTITUCION_CREADA institucionUuid={} nombre={} slug={}",
+                institution.getUuid(), institution.getName(), institution.getSlug());
         return institutionMapper.toDTO(institution);
     }
 
@@ -116,6 +120,7 @@ public class InstitutionService {
         if (oldLogoFile != null) fileStorageService.deleteFileOnlyByUuid(oldLogoFile.getUuid());
         if (oldBackgroundFile != null) fileStorageService.deleteFileOnlyByUuid(oldBackgroundFile.getUuid());
 
+        log.info("INSTITUCION_MODIFICADA institucionUuid={} nombre={}", institution.getUuid(), institution.getName());
         return institutionMapper.toDTO(institution);
     }
 
@@ -124,6 +129,8 @@ public class InstitutionService {
 
         Institution institution = optionalInstitution.get();
         institutionRepository.delete(institution);
+        log.warn("INSTITUCION_ELIMINADA institucionUuid={} nombre={} slug={}",
+                institution.getUuid(), institution.getName(), institution.getSlug());
         return institutionMapper.toDTO(institution);
     }
 

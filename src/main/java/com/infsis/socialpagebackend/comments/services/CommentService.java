@@ -15,6 +15,7 @@ import com.infsis.socialpagebackend.moderation.enums.ContentType;
 import com.infsis.socialpagebackend.moderation.exceptions.ContentBlockedException;
 import com.infsis.socialpagebackend.moderation.services.ModerationPipeline;
 import com.infsis.socialpagebackend.multitenant.TenantContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CommentService {
 
     @Autowired
@@ -77,6 +79,8 @@ public class CommentService {
         // ── Guardar auditoría de moderación ──────────────────────────────────
         moderationPipeline.saveResult(modResult, comment.getUuid(), ContentType.COMMENT);
 
+        log.info("COMENTARIO_CREADO commentUuid={} postUuid={} autorId={} estado={}",
+                comment.getUuid(), postUuid, user.getUuid(), comment.getState());
         return commentMapper.toDTO(comment);
     }
 
@@ -117,6 +121,7 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
+        log.warn("COMENTARIO_ELIMINADO commentUuid={} autorId={}", commentUuid, user.getUuid());
     }
 
     private Users getCurrentUser() {
@@ -158,6 +163,7 @@ public class CommentService {
 
         commentRepository.save(currentComment);
 
+        log.info("COMENTARIO_APROBADO commentUuid={}", currentComment.getUuid());
         return commentMapper.toDTO(currentComment);
     }
 
@@ -169,6 +175,7 @@ public class CommentService {
 
         commentRepository.save(currentComment);
 
+        log.info("COMENTARIO_RECHAZADO commentUuid={}", currentComment.getUuid());
         return commentMapper.toDTO(currentComment);
     }
     public CommentDTO removeModeratedComment(CommentDTO commentDTO) {
@@ -179,6 +186,7 @@ public class CommentService {
 
         commentRepository.save(currentComment);
 
+        log.warn("COMENTARIO_REMOVIDO commentUuid={}", currentComment.getUuid());
         return commentMapper.toDTO(currentComment);
     }
     public List<CommentDTO> getAllDeletedModeratedComments() {

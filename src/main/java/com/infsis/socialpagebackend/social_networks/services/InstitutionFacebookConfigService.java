@@ -4,17 +4,20 @@ import com.infsis.socialpagebackend.exceptions.NotFoundException;
 import com.infsis.socialpagebackend.institutions.models.Institution;
 import com.infsis.socialpagebackend.institutions.repositories.InstitutionRepository;
 import com.infsis.socialpagebackend.security.AesTokenEncryptor;
+import com.infsis.socialpagebackend.security.TokenDecryptionException;
 import com.infsis.socialpagebackend.social_networks.dtos.FacebookConfigRequestDTO;
 import com.infsis.socialpagebackend.social_networks.dtos.FacebookConfigResponseDTO;
 import com.infsis.socialpagebackend.social_networks.mappers.InstitutionFacebookConfigMapper;
 import com.infsis.socialpagebackend.social_networks.models.InstitutionFacebookConfig;
 import com.infsis.socialpagebackend.social_networks.repositories.InstitutionFacebookConfigRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class InstitutionFacebookConfigService {
 
     @Autowired
@@ -61,8 +64,14 @@ public class InstitutionFacebookConfigService {
         }
 
         InstitutionFacebookConfig config = configOpt.get();
-        String rawToken = encryptor.decrypt(config.getAccessToken());
-        return mapper.toResponseDTO(config, rawToken);
+        try {
+            String rawToken = encryptor.decrypt(config.getAccessToken());
+            return mapper.toResponseDTO(config, rawToken);
+        } catch (TokenDecryptionException e) {
+            log.warn("FACEBOOK_TOKEN_INDESCIFRABLE institucionId={} configUuid={} motivo=clave_incorrecta_o_token_corrupto",
+                    institutionUuid, config.getUuid());
+            return mapper.toInvalidTokenDTO(config);
+        }
     }
 
     public FacebookConfigResponseDTO disableConfig(String institutionUuid) {
@@ -73,8 +82,14 @@ public class InstitutionFacebookConfigService {
         config.setEnabled(false);
         configRepository.save(config);
 
-        String rawToken = encryptor.decrypt(config.getAccessToken());
-        return mapper.toResponseDTO(config, rawToken);
+        try {
+            String rawToken = encryptor.decrypt(config.getAccessToken());
+            return mapper.toResponseDTO(config, rawToken);
+        } catch (TokenDecryptionException e) {
+            log.warn("FACEBOOK_TOKEN_INDESCIFRABLE institucionId={} configUuid={} motivo=clave_incorrecta_o_token_corrupto",
+                    institutionUuid, config.getUuid());
+            return mapper.toInvalidTokenDTO(config);
+        }
     }
 
     public void deleteConfig(String institutionUuid) {

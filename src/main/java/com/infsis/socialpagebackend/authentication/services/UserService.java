@@ -11,6 +11,7 @@ import com.infsis.socialpagebackend.authentication.repositories.RoleRepository;
 import com.infsis.socialpagebackend.authentication.repositories.TokenRepository;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.exceptions.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -78,6 +80,8 @@ public class UserService {
         }
 
         userRepository.save(user);
+        log.info("USUARIO_CREADO targetUserId={} email={} rol={} institucionId={}",
+                user.getUuid(), user.getEmail(), role.getName(), user.getInstitutionId());
 
         UserDetailDTO result = userMapper.toDTO(user);
         result.setRole(role.getName());
@@ -112,6 +116,7 @@ public class UserService {
         if (callerIsRoot && dto.getInstitutionId() != null) target.setInstitutionId(dto.getInstitutionId());
 
         userRepository.save(target);
+        log.info("USUARIO_MODIFICADO targetUserId={} email={}", target.getUuid(), target.getEmail());
         return userMapper.toDTO(target);
     }
 
@@ -121,6 +126,8 @@ public class UserService {
 
         target.setEnabled(!target.isEnabled());
         userRepository.save(target);
+        log.info("USUARIO_{} targetUserId={} email={}",
+                target.isEnabled() ? "HABILITADO" : "DESHABILITADO", target.getUuid(), target.getEmail());
 
         if (!target.isEnabled()) {
             List<Token> tokens = tokenRepository.findAllValidTokenByUser(target.getId());
@@ -136,6 +143,7 @@ public class UserService {
         Users target = findManageableUser(uuid, callerIsRoot, callerInstitutionId);
         guardSelf(target.getUuid());
         userRepository.delete(target);
+        log.warn("USUARIO_ELIMINADO targetUserId={} email={}", target.getUuid(), target.getEmail());
     }
 
     // ── Helpers privados ─────────────────────────────────────────────────────
