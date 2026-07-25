@@ -1,7 +1,9 @@
 package com.infsis.socialpagebackend.security;
 
 
+import com.infsis.socialpagebackend.security.ratelimit.RateLimitingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,8 +35,23 @@ public class SecurityConfig {
     private TenantResolutionFilter tenantResolutionFilter;
 
     @Autowired
+    private RateLimitingFilter rateLimitingFilter;
+
+    @Autowired
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+    }
+
+    /**
+     * Evita que Spring Boot registre {@link RateLimitingFilter} automáticamente en la
+     * cadena de filtros del servlet (lo que lo ejecutaría dos veces). Aquí solo se usa
+     * dentro de la SecurityFilterChain vía {@code addFilterBefore}.
+     */
+    @Bean
+    public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilterRegistration(RateLimitingFilter filter) {
+        FilterRegistrationBean<RateLimitingFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     //Este bean va a encargarse de verificar la información de los usuarios que se loguearán en nuestra api
@@ -80,6 +97,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated())
                 .cors(c -> c.configurationSource(customCorsConfiguration))
                 .httpBasic(withDefaults());
+        http.addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(tenantResolutionFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

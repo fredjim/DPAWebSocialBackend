@@ -15,6 +15,7 @@ import com.infsis.socialpagebackend.medias.models.UploadedFile;
 import com.infsis.socialpagebackend.medias.repositories.UploadedFileRepository;
 import com.infsis.socialpagebackend.medias.services.FileStorageService;
 import com.infsis.socialpagebackend.security.JwtGenerator;
+import com.infsis.socialpagebackend.security.ratelimit.LoginAttemptService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +40,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final UploadedFileRepository uploadedFileRepository;
     private final FileStorageService fileStorageService;
+    private final LoginAttemptService loginAttemptService;
 
     public AuthenticationService(
             UserRepository userRepository,
@@ -48,7 +50,8 @@ public class AuthenticationService {
             JwtGenerator jwtGenerator,
             PasswordEncoder passwordEncoder,
             UploadedFileRepository uploadedFileRepository,
-            FileStorageService fileStorageService
+            FileStorageService fileStorageService,
+            LoginAttemptService loginAttemptService
     ) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -58,6 +61,7 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
         this.uploadedFileRepository = uploadedFileRepository;
         this.fileStorageService = fileStorageService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     public UserDetailDTO updateUserProfile(UserDetailDTO userDetailDTO) {
@@ -223,17 +227,22 @@ public class AuthenticationService {
     }
 
     private void authenticateUser(String email, String password) {
+        // Bloqueo de cuenta: si el email superó el máximo de intentos fallidos, se rechaza (429).
+        loginAttemptService.assertNotLocked(email);
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
+            loginAttemptService.reset(email);
         } catch (DisabledException e) {
             log.warn("LOGIN_FALLIDO email={} motivo=cuenta_deshabilitada", email);
             throw new AccountDisabledException("La cuenta está deshabilitada. Contacta al administrador.");
         } catch (BadCredentialsException e) {
+            loginAttemptService.recordFailure(email);
             log.warn("LOGIN_FALLIDO email={} motivo=credenciales_invalidas", email);
             throw new InvalidCredentialsException("Credenciales incorrectas. Verifica tu email y contraseña.");
         } catch (AuthenticationException e) {
+            loginAttemptService.recordFailure(email);
             log.warn("LOGIN_FALLIDO email={} motivo=error_autenticacion", email);
             throw new InvalidCredentialsException("Error de autenticación: " + e.getMessage());
         }
