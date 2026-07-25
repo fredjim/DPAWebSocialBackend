@@ -85,14 +85,14 @@ public class NavItemService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
-        log.info("User id :" + user.getUuid());
-
         if (navItemRepository.existsByInstitutionUuidAndPath(tenantId, dto.getPath())) {
             throw new DuplicateKeyException("Already exists a nav_item with the path '" + dto.getPath() + "' in this institution");
         }
 
         NavItem navItem = navItemMapper.getNavItem(dto, institution, user);
         navItemRepository.save(navItem);
+        log.info("NAV_ITEM_CREADO navItemUuid={} label={} path={} institucionId={}",
+                navItem.getUuid(), navItem.getLabel(), navItem.getPath(), tenantId);
         return navItemMapper.toDTO(navItem);
     }
 
@@ -106,8 +106,6 @@ public class NavItemService {
         String email = authentication.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
-
-        log.info("User id :" + user.getUuid());
 
         if (dto.getLabel() != null) existing.setLabel(dto.getLabel());
         if (dto.getPath() != null) {
@@ -123,6 +121,7 @@ public class NavItemService {
         existing.setUsers(user);
 
         navItemRepository.save(existing);
+        log.info("NAV_ITEM_MODIFICADO navItemUuid={} label={}", existing.getUuid(), existing.getLabel());
         return navItemMapper.toDTO(existing);
     }
 
@@ -165,6 +164,7 @@ public class NavItemService {
         }
 
         navItemRepository.hardDeleteByUuid(uuid);
+        log.warn("NAV_ITEM_ELIMINADO navItemUuid={} label={}", uuid, dto.getLabel());
         return dto;
     }
 

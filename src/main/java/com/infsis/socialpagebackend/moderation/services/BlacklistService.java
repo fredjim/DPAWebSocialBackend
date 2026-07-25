@@ -99,7 +99,7 @@ public class BlacklistService {
         entity.setNotes(request.getNotes());
 
         BlacklistWord saved = repository.save(entity);
-        log.info("Blacklist: word added by moderator — '{}' [{}]", word, request.getCategory());
+        log.info("BLACKLIST_PALABRA_AGREGADA id={} palabra='{}' categoria={}", saved.getId(), word, request.getCategory());
 
         rebuildTrie();
         return toDTO(saved);
@@ -116,7 +116,7 @@ public class BlacklistService {
         entity.setActive(!entity.isActive());
         BlacklistWord saved = repository.save(entity);
 
-        log.info("Blacklist: word '{}' toggled to active={}", saved.getWord(), saved.isActive());
+        log.info("BLACKLIST_PALABRA_TOGGLE id={} palabra='{}' activa={}", saved.getId(), saved.getWord(), saved.isActive());
         rebuildTrie();
         return toDTO(saved);
     }
@@ -130,7 +130,7 @@ public class BlacklistService {
                 .orElseThrow(() -> new NoSuchElementException("Blacklist word not found: " + id));
 
         repository.delete(entity);
-        log.info("Blacklist: word '{}' deleted", entity.getWord());
+        log.warn("BLACKLIST_PALABRA_ELIMINADA id={} palabra='{}'", id, entity.getWord());
         rebuildTrie();
     }
 

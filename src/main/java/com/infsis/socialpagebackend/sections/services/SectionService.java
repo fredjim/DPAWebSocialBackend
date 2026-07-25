@@ -106,8 +106,6 @@ public class SectionService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
 
-        log.info("User id :" + user.getUuid());
-
         if (sectionRepository.existsByInstitutionUuidAndPath(tenantId, sectionDTO.getPath())) {
             throw new DuplicateKeyException("Already exists a section with the path '" + sectionDTO.getPath() + "' in this institution");
         }
@@ -128,6 +126,7 @@ public class SectionService {
         section.setOrderIndex(orderIndex);
         sectionRepository.save(section);
 
+        log.info("SECTION_CREADA sectionUuid={} path={} institucionId={}", section.getUuid(), section.getPath(), tenantId);
         return sectionMapper.toDTO(section);
     }
 
@@ -194,6 +193,7 @@ public class SectionService {
 
         sectionRepository.hardDeleteByUuid(sectionUuid);
         closeGapAfter(section.getNavItem(), section.getInstitution().getUuid(), section.getOrderIndex(), sectionUuid);
+        log.warn("SECTION_ELIMINADA sectionUuid={} path={}", sectionUuid, dto.getPath());
         return dto;
     }
 
@@ -213,8 +213,6 @@ public class SectionService {
         String email = authentication.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found: ", email));
-
-        log.info("User id :" + user.getUuid());
 
         Section foundSection = sectionRepository.findOneByUuid(sectionUuid);
         if (foundSection == null || foundSection.isDeleted()) {
@@ -268,6 +266,7 @@ public class SectionService {
 
         Section updatedSection = sectionRepository.save(foundSection);
 
+        log.info("SECTION_MODIFICADA sectionUuid={} nombre={}", updatedSection.getUuid(), updatedSection.getName());
         return sectionMapper.toDTO(updatedSection);
     }
 
