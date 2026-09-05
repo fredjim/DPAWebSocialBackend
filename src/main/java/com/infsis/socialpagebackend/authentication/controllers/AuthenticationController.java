@@ -18,6 +18,7 @@ import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.multitenant.TenantResolver;
 import com.infsis.socialpagebackend.security.JwtGenerator;
 import com.infsis.socialpagebackend.authentication.services.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +94,8 @@ public class AuthenticationController {
     @PostMapping("/auth/register")
     public ResponseEntity<Map<String, Object>> registrar(
             @Valid @RequestBody UserRegistryDTO userRegistryDTO,
-            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug) {
+            @RequestHeader(value = "X-Tenant-Slug", required = false) String tenantSlug,
+            HttpServletRequest request) {
 
         String tenantId = tenantResolver.resolveOrThrow(tenantSlug);
 
@@ -118,7 +120,7 @@ public class AuthenticationController {
         usuariosRepository.save(usuarios);
 
         try {
-            emailVerificationService.generateAndSend(usuarios);
+            emailVerificationService.generateAndSend(usuarios, request.getHeader("Origin"));
         } catch (Exception e) {
             log.warn("No se pudo enviar el email de verificación a {}: {}", usuarios.getEmail(), e.getMessage());
             return new ResponseEntity<>(Collections.singletonMap("message",
@@ -224,8 +226,9 @@ public class AuthenticationController {
 
     @PostMapping("/auth/forgot-password")
     public ResponseEntity<Map<String, Object>> forgotPassword(
-            @Valid @RequestBody ForgotPasswordDTO dto) {
-        passwordResetService.requestReset(dto.email());
+            @Valid @RequestBody ForgotPasswordDTO dto,
+            HttpServletRequest request) {
+        passwordResetService.requestReset(dto.email(), request.getHeader("Origin"));
         return ResponseEntity.ok(Collections.singletonMap("message",
                 "Si el email existe, recibirás un enlace para restablecer tu contraseña."));
     }
