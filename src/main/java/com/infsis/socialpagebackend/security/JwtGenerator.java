@@ -81,6 +81,10 @@ public class JwtGenerator {
         return extractClaims(token).get("type", String.class);
     }
 
+    public boolean extractIsRoot(String token) {
+        return Boolean.TRUE.equals(extractClaims(token).get("isRoot", Boolean.class));
+    }
+
     private String generarToken(Users user, long expirationTime, String type) {
         return Jwts.builder()
                 .setSubject(user.getEmail())
