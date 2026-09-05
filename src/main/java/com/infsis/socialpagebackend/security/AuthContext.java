@@ -11,6 +11,6 @@ public class AuthContext {
     }
 
     public boolean isRoot() {
-        return TenantContext.getCurrentTenant() == null;
+        return TenantContext.isRoot();
     }
 }

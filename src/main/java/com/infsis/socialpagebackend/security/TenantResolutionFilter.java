@@ -58,6 +58,10 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
                 MDC.put("institutionId", tenantId);
             }
 
+            // Independiente de tenantId: un ROOT puede navegar desde el subdominio de una
+            // institución (X-Tenant-Slug presente) sin dejar de ser ROOT. Ver TenantContext.
+            TenantContext.setRootFlag(resolveIsRootFromJwt(request));
+
             String userId = resolveUserIdFromJwt(request);
             if (userId != null) {
                 MDC.put("userId", userId);
@@ -89,6 +93,16 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
             return jwtGenerator.extractUserId(bearer.substring(7));
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    private boolean resolveIsRootFromJwt(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer == null || !bearer.startsWith("Bearer ")) return false;
+        try {
+            return jwtGenerator.extractIsRoot(bearer.substring(7));
+        } catch (Exception e) {
+            return false;
         }
     }
 
