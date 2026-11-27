@@ -22,6 +22,7 @@ public class UserMapper {
         userDetailDTO.setPhone(user.getPhone());
         userDetailDTO.setInstitutionId(user.getInstitutionId());
         userDetailDTO.setEnabled(user.isEnabled());
+        userDetailDTO.setEmailVerified(user.isEmailVerified());
 
         if (!user.getRoles().isEmpty()) {
             userDetailDTO.setRole(user.getRoles().get(0).getName());

@@ -40,4 +40,6 @@ public class UserDetailDTO {
     private String institutionId;
 
     private Boolean enabled;
+
+    private Boolean emailVerified;
 }

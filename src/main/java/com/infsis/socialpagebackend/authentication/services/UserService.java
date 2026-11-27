@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.authentication.services;
 
+import com.infsis.socialpagebackend.authentication.dtos.AdminUpdateUserDTO;
 import com.infsis.socialpagebackend.authentication.dtos.CreateUserDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserDetailDTO;
 import com.infsis.socialpagebackend.authentication.mappers.UserMapper;
@@ -103,26 +104,42 @@ public class UserService {
         return userMapper.toDTO(findManageableUser(uuid, callerIsRoot, callerInstitutionId));
     }
 
-    public UserDetailDTO updateUser(String uuid, UserDetailDTO dto,
+    public UserDetailDTO updateUser(String uuid, AdminUpdateUserDTO dto,
                                     boolean callerIsRoot, String callerInstitutionId) {
         Users target = findManageableUser(uuid, callerIsRoot, callerInstitutionId);
         guardSelf(target.getUuid());
+        guardStudentTarget(target, callerIsRoot);
+
+        boolean emailChanged = dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(target.getEmail());
+        if (emailChanged && userRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("The email is already registered.");
+        }
+        boolean passwordChanged = dto.getPassword() != null;
+        boolean verificationRevoked = Boolean.FALSE.equals(dto.getEmailVerified()) && target.isEmailVerified();
 
         if (dto.getName()     != null) target.setName(dto.getName());
         if (dto.getLastName() != null) target.setLastName(dto.getLastName());
         if (dto.getEmail()    != null) target.setEmail(dto.getEmail());
         if (dto.getPhone()    != null) target.setPhone(dto.getPhone());
-        if (dto.getPassword() != null) target.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (passwordChanged)           target.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getEmailVerified() != null) target.setEmailVerified(dto.getEmailVerified());
         if (callerIsRoot && dto.getInstitutionId() != null) target.setInstitutionId(dto.getInstitutionId());
 
         userRepository.save(target);
-        log.info("USUARIO_MODIFICADO targetUserId={} email={}", target.getUuid(), target.getEmail());
+        log.info("USUARIO_MODIFICADO targetUserId={} email={} emailCambiado={} passwordCambiado={} emailVerificado={}",
+                target.getUuid(), target.getEmail(), emailChanged, passwordChanged, target.isEmailVerified());
+
+        // Cambios de credenciales o pérdida de verificación invalidan las sesiones activas
+        if (emailChanged || passwordChanged || verificationRevoked) {
+            revokeAllTokens(target);
+        }
         return userMapper.toDTO(target);
     }
 
     public UserDetailDTO toggleDisable(String uuid, boolean callerIsRoot, String callerInstitutionId) {
         Users target = findManageableUser(uuid, callerIsRoot, callerInstitutionId);
         guardSelf(target.getUuid());
+        guardStudentTarget(target, callerIsRoot);
 
         target.setEnabled(!target.isEnabled());
         userRepository.save(target);
@@ -130,11 +147,7 @@ public class UserService {
                 target.isEnabled() ? "HABILITADO" : "DESHABILITADO", target.getUuid(), target.getEmail());
 
         if (!target.isEnabled()) {
-            List<Token> tokens = tokenRepository.findAllValidTokenByUser(target.getId());
-            if (!tokens.isEmpty()) {
-                tokens.forEach(t -> t.setIsRevoked(true));
-                tokenRepository.saveAll(tokens);
-            }
+            revokeAllTokens(target);
         }
         return userMapper.toDTO(target);
     }
@@ -142,6 +155,7 @@ public class UserService {
     public void deleteUser(String uuid, boolean callerIsRoot, String callerInstitutionId) {
         Users target = findManageableUser(uuid, callerIsRoot, callerInstitutionId);
         guardSelf(target.getUuid());
+        guardStudentTarget(target, callerIsRoot);
         userRepository.delete(target);
         log.warn("USUARIO_ELIMINADO targetUserId={} email={}", target.getUuid(), target.getEmail());
     }
@@ -159,6 +173,24 @@ public class UserService {
             throw new IllegalArgumentException("El usuario no pertenece a tu institución.");
         }
         return target;
+    }
+
+    /** Un administrador de institución solo puede modificar usuarios con rol STUDENT. */
+    private void guardStudentTarget(Users target, boolean callerIsRoot) {
+        if (callerIsRoot) return;
+        boolean isStudent = target.getRoles().stream()
+                .anyMatch(r -> "STUDENT".equalsIgnoreCase(r.getName()));
+        if (!isStudent) {
+            throw new IllegalArgumentException("Solo puedes gestionar usuarios con rol STUDENT.");
+        }
+    }
+
+    private void revokeAllTokens(Users target) {
+        List<Token> tokens = tokenRepository.findAllValidTokenByUser(target.getId());
+        if (!tokens.isEmpty()) {
+            tokens.forEach(t -> t.setIsRevoked(true));
+            tokenRepository.saveAll(tokens);
+        }
     }
 
     private void guardSelf(String targetUuid) {

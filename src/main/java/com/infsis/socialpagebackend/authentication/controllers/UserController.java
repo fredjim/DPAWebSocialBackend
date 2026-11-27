@@ -1,5 +1,6 @@
 package com.infsis.socialpagebackend.authentication.controllers;
 
+import com.infsis.socialpagebackend.authentication.dtos.AdminUpdateUserDTO;
 import com.infsis.socialpagebackend.authentication.dtos.CreateUserDTO;
 import com.infsis.socialpagebackend.authentication.dtos.PermissionDTO;
 import com.infsis.socialpagebackend.authentication.dtos.UserDetailDTO;
@@ -83,7 +84,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('EDIT_USER')")
     @PutMapping("/{uuid}")
     public UserDetailDTO updateUser(@PathVariable String uuid,
-                                    @Valid @RequestBody UserDetailDTO dto) {
+                                    @Valid @RequestBody AdminUpdateUserDTO dto) {
         return userService.updateUser(uuid, dto, authContext.isRoot(), authContext.getInstitutionId());
     }
 
