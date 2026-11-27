@@ -35,7 +35,7 @@ public class Institution {
     @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false, length = 1000)
     private String description;
 
     @Column(nullable = false, length = 300)

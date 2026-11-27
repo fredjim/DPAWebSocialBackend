@@ -3,6 +3,7 @@ package com.infsis.socialpagebackend.authentication.services;
 import com.infsis.socialpagebackend.authentication.models.Users;
 import com.infsis.socialpagebackend.authentication.repositories.UserRepository;
 import com.infsis.socialpagebackend.security.ConstantsSecurity;
+import com.infsis.socialpagebackend.security.CustomCorsConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -21,8 +22,9 @@ import java.util.Base64;
 @Slf4j
 public class PasswordResetService {
 
-    @Value("${app.email.reset-url}")
-    private String resetUrl;
+    // Usado solo cuando la petición no trae un Origin confiable (ej. llamada no-browser).
+    @Value("${app.frontend.fallback-url}")
+    private String fallbackFrontendUrl;
 
     @Value("${spring.mail.from}")
     private String mailFrom;
@@ -30,21 +32,31 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
+    private final CustomCorsConfiguration corsConfiguration;
 
     public PasswordResetService(UserRepository userRepository,
                                 JavaMailSender mailSender,
-                                PasswordEncoder passwordEncoder) {
+                                PasswordEncoder passwordEncoder,
+                                CustomCorsConfiguration corsConfiguration) {
         this.userRepository = userRepository;
         this.mailSender = mailSender;
         this.passwordEncoder = passwordEncoder;
+        this.corsConfiguration = corsConfiguration;
     }
 
-    public void requestReset(String email) {
+    /**
+     * @param requestOrigin header "Origin" de la petición de forgot-password (ej. "https://dpa.umss.dev").
+     *                      Si es un origen permitido (misma lista que valida CORS), el link de
+     *                      reset apunta al subdominio real del tenant del usuario. Si no, cae al
+     *                      fallback configurado.
+     */
+    public void requestReset(String email, String requestOrigin) {
         // Siempre responde OK — nunca revela si el email existe (anti-enumeration)
         userRepository.findByEmail(email).ifPresent(user -> {
             log.info("RESET_PASSWORD_SOLICITADO userId={} email={}", user.getUuid(), user.getEmail());
             String token = buildToken(user);
-            String link  = resetUrl + "?token=" + token;
+            String base  = resolveFrontendBase(requestOrigin);
+            String link  = base + "/reset-password?token=" + token;
 
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(mailFrom);
@@ -93,6 +105,13 @@ public class PasswordResetService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("RESET_PASSWORD_COMPLETADO userId={} email={}", user.getUuid(), user.getEmail());
+    }
+
+    private String resolveFrontendBase(String requestOrigin) {
+        if (requestOrigin != null && corsConfiguration.isAllowedOrigin(requestOrigin)) {
+            return requestOrigin;
+        }
+        return fallbackFrontendUrl;
     }
 
     private String buildToken(Users user) {
