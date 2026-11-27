@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -147,7 +148,8 @@ public class ArticleService {
             article.setSection(section);
             article.setTitle(articleDTO.getTitle());
             article.setText(articleDTO.getText());
-            article.setDate(articleDTO.getDate());
+            // La fecha del artículo es siempre la de creación, asignada por el servidor
+            article.setDate(new Date());
             article.setArticle_medias(medias);
             article.setInstitutionId(tenantId);
 
@@ -294,7 +296,9 @@ public class ArticleService {
             foundArticle.setSection(section);
         }
 
-        foundArticle.setDate(articleDTO.getDate());
+        if (articleDTO.getDate() != null) {
+            foundArticle.setDate(articleDTO.getDate());
+        }
         foundArticle.setTitle(articleDTO.getTitle());
         foundArticle.setText(articleDTO.getText());
 

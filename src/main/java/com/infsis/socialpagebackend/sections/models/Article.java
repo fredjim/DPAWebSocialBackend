@@ -74,6 +74,9 @@ public class Article {
     @PrePersist
     public void initializeUuid() {
         this.setUuid(UUID.randomUUID().toString());
+        if (this.date == null) {
+            this.date = new Date();
+        }
     }
 
     @Override
